@@ -1,58 +1,59 @@
+use crate::players::{info, movement};
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
-
-#[derive(Debug)]
+use bevy_ggrs::{GGRSPlugin, Rollback};
 pub struct Animations(Vec<Handle<AnimationClip>>);
 
-pub fn play_scene(
-    animations: Res<Animations>,
-    mut player: Query<&mut AnimationPlayer, Added<AnimationPlayer>>,
-   // mut done: Local<bool>,
-) {
-    for mut anim in player.iter_mut(){
-        anim.play(animations.0[0].clone_weak()).repeat();
-        println!("in here");
-    }
- }
-
-pub fn create_default_plane(
-    mut commands: Commands, 
+pub fn setup_character(
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
-){
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    // Insert a resource with the current scene information
     commands.insert_resource(Animations(vec![
-        asset_server.load("nature/phoenix_bird/scene.gltf#Animation0")
+        asset_server.load("mixamo/from_blender.glb#Animation0")
     ]));
 
-    let player_handle1: Handle<Scene> = asset_server.load("nature/phoenix_bird/scene.gltf#Scene0");
-    commands.spawn_bundle(SceneBundle {
-        transform: Transform {
-            translation: Vec3::new(0.0, 5.0, -10.0),
-            scale: Vec3::new(0.01, 0.01, 0.01),
+    // Light
+    commands.spawn_bundle(DirectionalLightBundle {
+        transform: Transform::from_rotation(Quat::from_euler(
+            EulerRot::ZYX,
+            0.0,
+            1.0,
+            -std::f32::consts::FRAC_PI_4,
+        )),
+        directional_light: DirectionalLight {
+            shadows_enabled: true,
             ..default()
         },
-        scene: player_handle1.clone(),
         ..default()
     });
 
-    let player_handle2: Handle<Scene> = asset_server.load("nature/heaven/scene.gltf#Scene0");
-    commands.spawn_bundle(SceneBundle {
-        transform: Transform {
-            translation: Vec3::new(0.0, 0.0, 0.0),
-            scale: Vec3::new(10.0, 10.0, 10.0),
-            ..default()
-        },
-        scene: player_handle2.clone(),
-        ..default()
-    });
+    //Character
 
-    let player_handle3: Handle<Scene> = asset_server.load("default/parasol/scene.gltf#Scene0");
     commands.spawn_bundle(SceneBundle {
         transform: Transform {
-            translation: Vec3::new(0.0, 0.0, 0.0),
-            scale: Vec3::new(0.001, 0.001, 0.001),
+            translation: Vec3::new(2.0, 0.0, 0.0),
             ..default()
         },
-        scene: player_handle3.clone(),
+        scene: asset_server.load("mixamo/from_blender.glb#Scene0"),
         ..default()
     });
+}
+
+
+// Once the scene is loaded, start the animation
+pub fn setup_scene_once_loaded(
+    animations: Res<Animations>,
+    mut player: Query<&mut AnimationPlayer>,
+    mut done: Local<bool>,
+) {
+    if !*done {
+        if let Ok(mut player) = player.get_single_mut() {
+            let time_elapsed = player.play(animations.0[0].clone_weak()).repeat().elapsed();
+            println!("time: {}", time_elapsed);
+            *done = true;
+            println!("Animation");
+        }
+    }
 }

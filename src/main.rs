@@ -51,8 +51,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Schedule::default().with_stage(
                 ROLLBACK_DEFAULT,
                 SystemStage::parallel()
-                    .with_system(network::move_player)
-                    //.with_system(movement::move_cube_system)
+                    //.with_system(network::move_player)
+                    .with_system(movement::move_cube_system)
                     .with_system(movement::increase_frame_system),
                 //.with_system(pcg_city::buildings::spawn_buildings), //i think spawning can't be done in rollback
             ),
@@ -86,8 +86,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_system(ggrs_camera::update_camera);
 
     //default plane
-    app.add_startup_system(create_default::create_default_plane) //animation of gltf not yet updated in rollback
-        .add_system(create_default::play_scene);
+    // app.add_startup_system(create_default::create_default_plane) //animation of gltf not yet updated in rollback
+    //     .add_system(create_default::play_scene);
 
     // .add_system(follow_me::update_camera) //puts camera behind player
     // .add_system(follow_me::frame); //follows player

@@ -44,6 +44,7 @@ pub fn setup_system(
     synctest_session: Option<Res<SyncTestSession<GGRSConfig>>>,
     spectator_session: Option<Res<SpectatorSession<GGRSConfig>>>,
 ) {
+    //center cube
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Cube { size: CUBE_SIZE })),
         material: materials.add(PLAYER_COLORS[0.0 as usize].into()),
@@ -54,6 +55,7 @@ pub fn setup_system(
         ..Default::default()
     });
     
+    //start creating p2p session
     println!("started setup system");
     let num_players = p2p_session
         .map(|s| s.num_players())
@@ -85,30 +87,12 @@ pub fn setup_system(
     // commands.insert_resource(Animations(vec![
     //     asset_server.load("mixamo/from_blender.glb#Animation0")
     // ]));
-   // let player_handle = asset_server.load("mixamo/from_blender.glb#Scene0");
+    let player_handle = asset_server.load("mixamo/from_blender.glb#Scene0");
 
     for handle in 0..num_players {
-        let rot = handle as f32 / num_players as f32 * 2. * std::f32::consts::PI;
-        let x = r * rot.cos();
-        let z = r * rot.sin();
-
-        let mut transform = Transform::default();
-        transform.translation.x = x;
-        transform.translation.y = CUBE_SIZE / 2.;
-        transform.translation.z = z;
-
-        let mut rng = thread_rng();
-        let x_loc: f32 = rng.gen();
-
-        let player_handle = asset_server.load("mixamo/from_blender.glb#Scene0");
+       // let player_handle = asset_server.load("mixamo/from_blender.glb#Scene0");
 
         let entity_id = commands
-            // .spawn_bundle(PbrBundle {
-            //     mesh: meshes.add(Mesh::from(shape::Cube { size: CUBE_SIZE })),
-            //     material: materials.add(PLAYER_COLORS[handle as usize].into()),
-            //     transform,
-            //     ..Default::default()
-            // })
             .spawn_bundle(SceneBundle {
                 transform: Transform {
                     translation: Vec3::new(handle as f32, 0.0, -5.0),
@@ -144,46 +128,6 @@ pub fn setup_system(
         if q == handle {
             println!("added me");
             commands.entity(entity_id).insert(Me);
-
-            // let mut yaw_pitch = YawPitch::new();
-            // yaw_pitch.set_rotation_quat(Quat::default());
-
-            // let t = Vec3::new(handle as f32, 0.0, 0.0);
-            // let camera = CameraRig::builder()
-            //     .with(Position::new(t))
-            //     .with(Rotation::new(Quat::default()))
-            //     .with(Smooth::new_position(1.25).predictive(true))
-            //     .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
-            //     .with(Smooth::new_position(2.5))
-            //     .with(yaw_pitch)
-            //     .with(
-            //         LookAt::new(t + Vec3::Y)
-            //             .tracking_smoothness(1.25)
-            //             .tracking_predictive(true),
-            //     )
-            //     .build();
-
-            // commands.spawn().insert(camera).insert(Rig);
-
-            // let t_cam = Vec3::new(handle as f32, 2.0, 5.0);
-            // commands
-            //     .spawn_bundle(Camera3dBundle {
-            //         transform: Transform{translation: t_cam, ..default()},
-            //         ..Default::default()
-            //     })
-            //     .insert(UiCameraConfig {
-            //         //idk why not displaying
-            //         show_ui: true,
-            //         ..default()
-            //     })
-            //     .insert_bundle(PickingCameraBundle::default())
-            //     .insert(MainCamera);
-
-            // // light
-            // commands.spawn_bundle(PointLightBundle {
-            //     transform: Transform::from_xyz(4.0, 8.0, 4.0),
-            //     ..Default::default()
-            // });
         }
     }
 

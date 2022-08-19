@@ -1,3 +1,4 @@
+- ggrs animation problem with gltfs
 - handle for each gltf animation
 - rig mixamo character with animation
 - easings
