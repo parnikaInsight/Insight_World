@@ -87,11 +87,10 @@ pub fn setup_system(
     // commands.insert_resource(Animations(vec![
     //     asset_server.load("mixamo/from_blender.glb#Animation0")
     // ]));
-    let player_handle = asset_server.load("mixamo/from_blender.glb#Scene0");
+    //let player_handle = asset_server.load("mixamo/from_blender.glb#Scene0");
+    let player_handle = asset_server.load("mixamo/walk_forward.glb#Scene0");
 
     for handle in 0..num_players {
-       // let player_handle = asset_server.load("mixamo/from_blender.glb#Scene0");
-
         let entity_id = commands
             .spawn_bundle(SceneBundle {
                 transform: Transform {
@@ -121,6 +120,7 @@ pub fn setup_system(
             //     CUBE_SIZE / 2.0,
             // )) //half the cube size
             // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+            .insert(movement::AnimationHelperSetup)
             .id();
 
         //insert Me

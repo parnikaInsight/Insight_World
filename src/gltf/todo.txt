@@ -1,4 +1,2 @@
-- ggrs animation problem with gltfs
-- handle for each gltf animation
-- rig mixamo character with animation
+- get position of entity after animation transform
 - easings

@@ -51,8 +51,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Schedule::default().with_stage(
                 ROLLBACK_DEFAULT,
                 SystemStage::parallel()
+                    .with_system(movement::animate_moving_player)
                     //.with_system(network::move_player)
-                    .with_system(movement::move_cube_system)
+                    //.with_system(movement::move_cube_system)
                     .with_system(movement::increase_frame_system),
                 //.with_system(pcg_city::buildings::spawn_buildings), //i think spawning can't be done in rollback
             ),
@@ -72,6 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .add_plugins(DefaultPlugins)
         .add_startup_system(network::setup_system)
+        .add_startup_system(movement::setup_character)
         // add your GGRS session
         .insert_resource(sess)
         .insert_resource(SessionType::P2PSession)
@@ -84,6 +86,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // .add_plugin(RapierDebugRenderPlugin::default())
         .add_startup_system(ggrs_camera::setup_camera)
         .add_system(ggrs_camera::update_camera);
+
+    //animations
+    app.add_system(movement::setup_helpers);
 
     //default plane
     // app.add_startup_system(create_default::create_default_plane) //animation of gltf not yet updated in rollback
