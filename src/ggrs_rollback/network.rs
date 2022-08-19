@@ -64,8 +64,8 @@ pub fn setup_system(
     // plane
     commands
         .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: PLANE_SIZE })), 
-            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+            mesh: meshes.add(Mesh::from(shape::Plane { size: 300.0 })), //PLANE_SIZE
+            material: materials.add(Color::rgb(0.5, 0.5, 0.5).into()),
             ..Default::default()
         })
         .insert(RigidBody::Fixed)

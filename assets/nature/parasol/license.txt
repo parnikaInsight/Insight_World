@@ -1,0 +1,11 @@
+Model Information:
+* title:	PARASOL
+* source:	https://sketchfab.com/3d-models/parasol-2f50ade7f1a64329814f9990a5eb00da
+* author:	cyberpunk#3057 (https://sketchfab.com/bhaveshushetty2000)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "PARASOL" (https://sketchfab.com/3d-models/parasol-2f50ade7f1a64329814f9990a5eb00da) by cyberpunk#3057 (https://sketchfab.com/bhaveshushetty2000) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,2 @@
+- move player creation out of ggrs network to players
+- overlay all objects with colliders

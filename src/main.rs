@@ -16,6 +16,9 @@ mod camera;
 mod gltf;
 use gltf::imported;
 
+mod default_plane;
+use default_plane::create_default;
+
 mod ggrs_rollback;
 mod players;
 use ggrs_rollback::{ggrs_camera, network};
@@ -82,9 +85,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_startup_system(ggrs_camera::setup_camera)
         .add_system(ggrs_camera::update_camera);
 
-    //art
-    app.add_startup_system(imported::create_default_plane) //animation of gltf not yet updated in rollback
-        .add_system(imported::play_scene);
+    //default plane
+    app.add_startup_system(create_default::create_default_plane) //animation of gltf not yet updated in rollback
+        .add_system(create_default::play_scene);
 
     // .add_system(follow_me::update_camera) //puts camera behind player
     // .add_system(follow_me::frame); //follows player

@@ -38,11 +38,21 @@ pub fn create_default_plane(
     commands.spawn_bundle(SceneBundle {
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, 0.0),
+            scale: Vec3::new(10.0, 10.0, 10.0),
             ..default()
         },
         scene: player_handle2.clone(),
         ..default()
     });
 
-    println!("created bird");
+    let player_handle3: Handle<Scene> = asset_server.load("default/parasol/scene.gltf#Scene0");
+    commands.spawn_bundle(SceneBundle {
+        transform: Transform {
+            translation: Vec3::new(0.0, 0.0, 0.0),
+            scale: Vec3::new(0.001, 0.001, 0.001),
+            ..default()
+        },
+        scene: player_handle3.clone(),
+        ..default()
+    });
 }
