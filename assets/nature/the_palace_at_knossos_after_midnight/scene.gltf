@@ -1,0 +1,304 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 39800,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 477600,
+      "componentType": 5126,
+      "count": 39800,
+      "max": [
+        0.9993834495544434,
+        0.9993833303451538,
+        0.9998766779899597
+      ],
+      "min": [
+        -0.9993834495544434,
+        -0.9993836879730225,
+        -0.9998766779899597
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 39800,
+      "max": [
+        1.2982399463653564,
+        0.9968500137329102
+      ],
+      "min": [
+        9.000000136438757e-05,
+        0.0031500000040978193
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 59400,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "trickmachine (https://sketchfab.com/trickmachine)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/the-palace-at-knossos-after-midnight-7fa911710d294f52a51428da3847d808",
+      "title": "The Palace at Knossos after midnight"
+    },
+    "generator": "Sketchfab-12.68.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 237600,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 318400,
+      "byteOffset": 237600,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 955200,
+      "byteOffset": 556000,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1511200,
+      "uri": "scene.bin"
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_materials_unlit"
+  ],
+  "images": [
+    {
+      "uri": "textures/Material.001_baseColor.jpeg"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "name": "Material.001",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Object_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.8175220489501953,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.8152636037664822e-16,
+        -0.8175220489501953,
+        0.0,
+        0.0,
+        0.8175220489501953,
+        1.8152636037664822e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "name": "root"
+    },
+    {
+      "children": [
+        3
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "GLTF_SceneRootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        -0.0,
+        0.0,
+        -0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "RootNode (gltf orientation matrix)_0"
+    },
+    {
+      "children": [
+        5
+      ],
+      "matrix": [
+        0.9097498655319214,
+        0.06774444133043289,
+        -0.40959230065345764,
+        0.0,
+        0.008734012953937054,
+        0.9832552075386047,
+        0.1820245236158371,
+        0.0,
+        0.41506490111351013,
+        -0.1691741794347763,
+        0.8939245939254761,
+        0.0,
+        -0.2875646948814392,
+        0.02041485719382763,
+        1.4261391162872314,
+        1.0
+      ],
+      "name": "RootNode (model correction matrix)_1"
+    },
+    {
+      "children": [
+        6
+      ],
+      "name": "Root_2"
+    },
+    {
+      "children": [
+        7
+      ],
+      "matrix": [
+        2.0333199501037598,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0333199501037598,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0333199501037598,
+        0.0,
+        2.336400032043457,
+        -1.8549599647521973,
+        1.2398699522018433,
+        1.0
+      ],
+      "name": "Sphere_3"
+    },
+    {
+      "children": [
+        8
+      ],
+      "name": "Sphere_0_4"
+    },
+    {
+      "mesh": 0,
+      "name": "Object_8"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    }
+  ]
+}
