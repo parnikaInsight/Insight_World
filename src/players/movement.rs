@@ -13,6 +13,7 @@ use ggrs::{
     Config, InputStatus, P2PSession, PlayerHandle, PlayerType, SessionBuilder, SpectatorSession,
     SyncTestSession, UdpNonBlockingSocket,
 };
+use std::default;
 use std::env;
 use std::{hash::Hash, net::SocketAddr};
 
@@ -138,6 +139,7 @@ pub fn setup_character(
 
 pub fn animate_moving_player(
     animations: Res<CharacterAnimations>,
+    assets: Res<Assets<AnimationClip>>,
     mut player: Query<(Entity, &mut AnimationPlayer)>,
     inputs: Res<Vec<(BoxInput, InputStatus)>>,
     mut query: Query<
@@ -165,7 +167,10 @@ pub fn animate_moving_player(
                 if helper.player_entity.id() == player_ent.id() {
                         player.play(animations.0[1].clone_weak());
                         println!("Player animation W");
-                        t.translation.z += 0.2;
+                        t.translation.z += 0.1;
+
+                        // let a: &Assets<AnimationClip>;
+                        // let animation_clip = Assets::get(&animations.0[1].clone_weak());
                 }
             }
         }
