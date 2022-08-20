@@ -1,3 +1,6 @@
+// Only runs locally so uses cmd line args.
+// Must make ggrs changes to incorporate addresses and handles.
+
 use bevy::prelude::*;
 use bevy_ggrs::{Rollback, RollbackIdProvider};
 use bevy_mod_picking::*;
