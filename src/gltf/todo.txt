@@ -1,2 +1,0 @@
-- get position of entity after animation transform
-- easings

@@ -1,28 +1,24 @@
 use bevy::input::mouse::MouseMotion;
 use bevy_dolly::prelude::*;
-use bevy_rapier3d::prelude::*;
 use bevy::prelude::*;
 use bevy_mod_picking::*;
 
-
 #[derive(Component)]
-pub struct MainCamera;
+pub struct MainCamera; // Dolly fly camera
 
-/// set up a simple 3D scene
 pub fn setup_camera(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
 ) {
+    // Camera Setup
     let translation = [-2.0f32, 2.0f32, 5.0f32];
-       // let translation = [3.0f32, 1.0f32, 1.0f32];
-  //  let translation = [0.0f32, 30.0f32, 0.0f32];
     let transform = Transform::from_translation(bevy::math::Vec3::from_slice(&translation))
         .looking_at(bevy::math::Vec3::ZERO, bevy::math::Vec3::Y);
-
     let rotation = transform.rotation;
     let mut yaw_pitch = YawPitch::new();
     yaw_pitch.set_rotation_quat(rotation);
 
+    // Insert camera rig to control camera movement.
+    // Camera added separately.
     commands.spawn().insert(
         CameraRig::builder()
             .with(Position {
@@ -34,12 +30,13 @@ pub fn setup_camera(
             .build(),
     );
 
+    // Create camera.
     commands
         .spawn_bundle(Camera3dBundle {
             transform,
             ..Default::default()
         })
-        .insert(UiCameraConfig { //idk why not displaying
+        .insert(UiCameraConfig { //Currently not displaying
             show_ui: true,
             ..default()
         })
@@ -47,7 +44,7 @@ pub fn setup_camera(
         .insert_bundle(PickingCameraBundle::default())
         .insert(MainCamera);
 
-    // directional 'sun' light
+    // Directional 'sun' light.
     commands.spawn_bundle(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 32000.0,
@@ -77,7 +74,7 @@ pub fn update_camera(
 
     let mut move_vec = Vec3::ZERO;
 
-    // Q: Is dolly left-handed so z is flipped?
+    // Camera Movement
     if keys.pressed(KeyCode::Up) {
         move_vec.z -= 1.0;
     }
@@ -98,12 +95,14 @@ pub fn update_camera(
         move_vec.y -= 1.0;
     }
 
+    // Camera Thrust
     let boost: f32 = if keys.pressed(KeyCode::LShift) {
         1.
     } else {
         0.
     };
 
+    // Locked Camera Rotation
     let mut delta = Vec2::ZERO;
     for event in mouse_motion_events.iter() {
         delta += event.delta;
@@ -115,6 +114,7 @@ pub fn update_camera(
     let move_vec =
         rig.final_transform.rotation * move_vec.clamp_length_max(1.0) * boost_mult.powf(boost);
 
+    // If locked, rotate camera. Else, move camera.
     let window = windows.get_primary().unwrap();
     if window.cursor_locked() {
         rig.driver_mut::<YawPitch>().rotate_yaw_pitch(
@@ -125,6 +125,7 @@ pub fn update_camera(
             .translate(move_vec * time_delta_seconds * 10.0);
     }
 
+    // Update rig and camera postion.
     let transform = rig.update(time_delta_seconds);
     let mut q0 = query.p0();
     let (mut cam, _) = q0.single_mut();
