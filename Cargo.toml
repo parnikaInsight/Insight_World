@@ -16,7 +16,7 @@ bevy_mod_raycast = { git = "https://github.com/paxsethorld/bevy_mod_raycast.git"
 bevy_rapier3d = "0.16.0" #https://github.com/devil-ira/bevy_rapier", branch = "update-to-bevy-0.8" }
 bevy_egui = "0.15.0"
 bevy-inspector-egui = "0.12.1"
-
+bevy-scene-hook = "4.0"
 bytemuck = { version = "1.7", features=["derive"]}
 instant = "0.1"
 log = "0.4"

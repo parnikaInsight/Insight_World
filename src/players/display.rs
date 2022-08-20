@@ -1,12 +1,6 @@
 use crate::{players::info};
 use bevy::prelude::*;
-//use bevy_egui::{egui, EguiContext, EguiPlugin};
-use bevy_mod_picking::*;
 use bevy_mod_picking::{HoverEvent, PickingEvent};
-use std::{
-    marker::{PhantomData, PhantomPinned},
-    thread, time,
-};
 
 #[derive(Component)]
 pub struct UICamera;
@@ -24,14 +18,15 @@ pub fn click_for_display(
     mut events: EventReader<PickingEvent>,
     asset_server: Res<AssetServer>,
     players: Query<(Entity, &Transform, &mut info::Player)>,
-    mut query: Query<(Entity, With<InfoDisplay>)>, //there should only be one info display at a time
+    query: Query<(Entity, With<InfoDisplay>)>, // There should only be one info display at a time
 ) {
     let sprite_handle: Handle<Image> = asset_server.load("branding/icon.png");
 
     for event in events.iter() {
         match event {
             PickingEvent::Hover(e) => {
-                //spawn sprite bundle with transparent sprite background overlaid with text specific to player
+                // Spawn sprite bundle with transparent sprite background 
+                // Will be overlaid with text specific to player
                 if matches!(e, HoverEvent::JustEntered(_)) {
                     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
                     let text_style = TextStyle {
@@ -78,7 +73,7 @@ pub fn click_for_display(
                         })
                         .insert(InfoDisplay);
                 } else {
-                    //despawn or make invisible
+                    // Despawn or make invisible
                     for q in query.iter() {
                         commands.entity(q.0).despawn();
                     }

@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::ggrs_rollback::network;
 use super::info;
 
+// Damage player by pressing Return key if in a radius of 2.50.
 pub fn fight(
     mut players: Query<(Entity, &Transform, &mut info::Player)>,
     mut me: Query<(Entity, &Transform, &network::Me)>,
