@@ -43,6 +43,7 @@ pub struct CharacterAnimations(Vec<Handle<AnimationClip>>);
 pub fn setup_character(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Insert a resource with the current scene information
     commands.insert_resource(CharacterAnimations(vec![
+        asset_server.load("mixamo/Shoot_Forward#Animation0"),
         asset_server.load("mixamo/from_blender.glb#Animation0"),
         asset_server.load("mixamo/walk_forward.glb#Animation0"),
         asset_server.load("mixamo/backward.glb#Animation0"),
