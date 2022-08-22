@@ -10,6 +10,7 @@ mod default_plane;
 mod ggrs_rollback;
 mod players;
 
+use default_plane::create_default;
 use ggrs_rollback::{ggrs_camera, network};
 use players::{info, movement};
 
@@ -36,13 +37,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_rollback_type::<Transform>()
         .register_rollback_type::<info::Velocity>()
         // These systems will be executed as part of the advance frame update.
-        .with_rollback_schedule(
-            Schedule::default().with_stage(
-                ROLLBACK_DEFAULT,
-                SystemStage::parallel()
-                    .with_system(movement::animate_moving_player),
-            ),
-        )
+        .with_rollback_schedule(Schedule::default().with_stage(
+            ROLLBACK_DEFAULT,
+            SystemStage::parallel().with_system(movement::animate_moving_player),
+        ))
         .build(&mut app);
 
     // GGRS Setup
@@ -64,17 +62,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DollyCursorGrab)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default());
-        // .add_plugin(RapierDebugRenderPlugin::default())
+    // .add_plugin(RapierDebugRenderPlugin::default())
 
     // Camera
-    app
-        .add_startup_system(ggrs_camera::setup_camera)
+    app.add_startup_system(ggrs_camera::setup_camera)
         .add_system(ggrs_camera::update_camera);
 
     // Setup Players
-    app.add_startup_system(network::setup_system)// Start p2p session and add players.
-        .add_startup_system(movement::setup_character)// Insert player animations.
+    app.add_startup_system(network::setup_system) // Start p2p session and add players.
+        .add_startup_system(movement::setup_character) // Insert player animations.
         .add_system(movement::setup_helpers); // Find AnimationHelperSetup markers for players.
+
+    // Create default plane.
+    // app.add_startup_system(create_default::create_default_plane)
+    //     .add_system(create_default::play_scene);
 
     //egui
     app.add_plugin(EguiPlugin)
