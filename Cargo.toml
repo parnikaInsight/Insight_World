@@ -28,6 +28,7 @@ serde_json = "1.0"
 bevy_render = "0.8.0"
 bevy_pbr = "0.8.0"
 
+
 [profile.dev.package."*"]
 opt-level = 3
 
