@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use bevy::prelude::*;
 use std::hash::Hash;
 use std::collections::HashSet;
@@ -9,6 +11,7 @@ pub struct Player {
     pub bounties: usize,
     pub friends: HashSet<u32>,
     pub health: usize,
+    pub world: usize,
 }
 
 impl Player {

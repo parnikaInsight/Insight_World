@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use bevy::prelude::*;
 use bevy_ggrs::Rollback;
 use bytemuck::{Pod, Zeroable};
@@ -73,15 +75,15 @@ pub fn animate_moving_player(
 
         // W
         if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
-            println!("pressed W");
-            println!("{}", t.translation);
+            //println!("pressed W");
+            //println!("{}", t.translation);
 
             //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
 
             for (player_ent, mut player) in &mut player {
                 if helper.player_entity.id() == player_ent.id() {
                     player.play(animations.0[1].clone_weak());
-                    println!("Player animation W");
+                    //println!("Player animation W");
                     t.translation.z += 0.1;
 
                     // let a: &Assets<AnimationClip>;
@@ -91,33 +93,33 @@ pub fn animate_moving_player(
         }
         // S
         if input & INPUT_UP == 0 && input & INPUT_DOWN != 0 {
-            println!("pressed S");
+            //println!("pressed S");
             for (player_ent, mut player) in &mut player {
                 if helper.player_entity.id() == player_ent.id() {
                     player.play(animations.0[2].clone_weak());
-                    println!("Player animation S");
+                    //println!("Player animation S");
                     t.translation.z -= 0.1;
                 }
             }
         }
         // A
         if input & INPUT_LEFT != 0 && input & INPUT_RIGHT == 0 {
-            println!("pressed A");
+            //println!("pressed A");
             for (player_ent, mut player) in &mut player {
                 if helper.player_entity.id() == player_ent.id() {
                     player.play(animations.0[3].clone_weak());
-                    println!("Player animation A");
+                    //println!("Player animation A");
                     t.translation.x += 0.1;
                 }
             }
         }
         // D
         if input & INPUT_LEFT == 0 && input & INPUT_RIGHT != 0 {
-            println!("pressed D");
+            //println!("pressed D");
             for (player_ent, mut player) in &mut player {
                 if helper.player_entity.id() == player_ent.id() {
                     player.play(animations.0[4].clone_weak());
-                    println!("Player animation D");
+                    //println!("Player animation D");
                     t.translation.x -= 0.1;
                 }
             }
