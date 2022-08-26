@@ -17,6 +17,8 @@ use std::env;
 use std::net::SocketAddr;
 
 use crate::players::{info, movement};
+use crate::animation::animation_helper;
+use crate::worlds::world_manager;
 
 const CUBE_SIZE: f32 = 0.2;
 const BLUE: Color = Color::rgb(0.8, 0.6, 0.2);
@@ -53,18 +55,6 @@ pub fn setup_system(
         .or_else(|| spectator_session.map(|s| s.num_players()))
         .expect("No GGRS session found");
 
-    // plane
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 300.0 })), //PLANE_SIZE
-            material: materials.add(Color::rgb(0.5, 0.5, 0.5).into()),
-            ..Default::default()
-        })
-        .insert(RigidBody::Fixed)
-        .insert(Collider::cuboid(7.5, 7.5, 7.5)) //half the cube size
-        .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
-
-
     // read cmd line arguments: 0 will be 7000, 1 will be 7001
     let args: Vec<String> = env::args().collect();
     let query = &args[1];
@@ -92,6 +82,8 @@ pub fn setup_system(
                 bounties: 3,
                 friends: HashSet::new(),
                 health: 100,
+                world: 0,
+                plane: world_manager::IPlane::new(0, 0, 0),
             })
             .insert(info::Velocity::default())
             .insert(info::Information::default())
@@ -107,7 +99,7 @@ pub fn setup_system(
             // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
 
             // Animation Helper
-            .insert(movement::AnimationHelperSetup)
+            .insert(animation_helper::AnimationHelperSetup)
             .id();
 
         // Insert my player.
@@ -116,12 +108,6 @@ pub fn setup_system(
             commands.entity(entity_id).insert(Me);
         }
     }
-
-    // Light
-    commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
 }
 
 #[derive(Component)]

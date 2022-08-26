@@ -1,6 +1,10 @@
+#![allow(dead_code)]
+
 use bevy::prelude::*;
 use std::hash::Hash;
 use std::collections::HashSet;
+
+use crate::worlds::world_manager;
 
 #[derive(Default, Component, Debug)]
 pub struct Player {
@@ -9,6 +13,8 @@ pub struct Player {
     pub bounties: usize,
     pub friends: HashSet<u32>,
     pub health: usize,
+    pub world: u32,
+    pub plane: world_manager::IPlane,
 }
 
 impl Player {

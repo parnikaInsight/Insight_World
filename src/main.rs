@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use bevy::prelude::*;
 use bevy_dolly::prelude::*;
 use bevy_egui::EguiPlugin;
@@ -6,13 +8,17 @@ use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
 
-mod default_plane;
+mod animation;
+mod default_world;
 mod ggrs_rollback;
 mod players;
+mod worlds;
 
-use default_plane::create_default;
+use animation::{animation_helper, play};
+use default_world::create_default;
 use ggrs_rollback::{ggrs_camera, network};
 use players::{info, movement};
+use worlds::{create_insight, player};
 
 const FPS: usize = 60;
 const ROLLBACK_DEFAULT: &str = "rollback_default";
@@ -53,16 +59,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .insert_resource(WindowDescriptor {
             // This must come before default plugin.
-            width: 1700.,
-            height: 1000.,
+            width: 800.,
+            height: 800.,
             title: "Insight".to_owned(),
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DollyCursorGrab)
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default());
-    // .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default());
 
     // Camera
     app.add_startup_system(ggrs_camera::setup_camera)
@@ -70,12 +76,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Setup Players
     app.add_startup_system(network::setup_system) // Start p2p session and add players.
-        .add_startup_system(movement::setup_character) // Insert player animations.
-        .add_system(movement::setup_helpers); // Find AnimationHelperSetup markers for players.
+        .add_startup_system(play::setup_character) // Insert player animations.
+        .add_system(animation_helper::setup_helpers); // Find AnimationHelperSetup markers for players.
 
-    // Create default plane.
-    // app.add_startup_system(create_default::create_default_plane)
-    //     .add_system(create_default::play_scene);
+    // // Create default plane.
+    // app.add_startup_system(create_default::create_default_plane);
+
+    app.add_startup_system(create_insight::create_insight_world);
+
+    // Play stationary animations
+    //  .add_system(play::play_scene);
 
     //egui
     app.add_plugin(EguiPlugin)
