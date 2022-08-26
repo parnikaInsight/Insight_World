@@ -17,6 +17,7 @@ use std::env;
 use std::net::SocketAddr;
 
 use crate::players::{info, movement};
+use crate::animation::animation_helper;
 
 const CUBE_SIZE: f32 = 0.2;
 const BLUE: Color = Color::rgb(0.8, 0.6, 0.2);
@@ -96,7 +97,7 @@ pub fn setup_system(
             // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
 
             // Animation Helper
-            .insert(movement::AnimationHelperSetup)
+            .insert(animation_helper::AnimationHelperSetup)
             .id();
 
         // Insert my player.

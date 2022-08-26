@@ -6,6 +6,7 @@ use bytemuck::{Pod, Zeroable};
 use ggrs::{InputStatus, PlayerHandle};
 
 use crate::players::info;
+use crate::animation::{animation_helper, play};
 
 const INPUT_UP: u8 = 1 << 0;
 const INPUT_DOWN: u8 = 1 << 1;
@@ -37,25 +38,9 @@ pub fn input(_handle: In<PlayerHandle>, keyboard_input: Res<Input<KeyCode>>) -> 
 
     BoxInput { inp: input }
 }
-pub struct CharacterAnimations(Vec<Handle<AnimationClip>>);
-
-// Add player animations.
-pub fn setup_character(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-    // Insert a resource with the current scene information
-    commands.insert_resource(CharacterAnimations(vec![
-        asset_server.load("mixamo/from_blender.glb#Animation0"),
-        asset_server.load("mixamo/walk_forward.glb#Animation0"),
-        asset_server.load("mixamo/backward.glb#Animation0"),
-        asset_server.load("mixamo/left.glb#Animation0"),
-        asset_server.load("mixamo/right_crouch.glb#Animation0"),
-    ]));
-}
 
 pub fn animate_moving_player(
-    animations: Res<CharacterAnimations>,
+    animations: Res<play::CharacterAnimations>,
     // assets: Res<Assets<AnimationClip>>,
     mut player: Query<(Entity, &mut AnimationPlayer)>,
     inputs: Res<Vec<(BoxInput, InputStatus)>>,
@@ -65,7 +50,7 @@ pub fn animate_moving_player(
             &Children,
             &mut Transform,
             &info::Player,
-            &AnimationHelper,
+            &animation_helper::AnimationHelper,
         ),
         With<Rollback>,
     >,
@@ -127,61 +112,3 @@ pub fn animate_moving_player(
     }
 }
 
-#[derive(Debug, Component)]
-pub struct AnimationHelperSetup; // Marker for parent with animation player child.
-
-#[derive(Component)]
-pub struct AnimationHelper {
-    // Contains reference to specific animation player.
-    pub player_entity: Entity,
-}
-
-impl AnimationHelper {
-    fn new(player_entity: Entity) -> AnimationHelper {
-        AnimationHelper { player_entity }
-    }
-}
-
-pub fn setup_helpers(
-    // Finds all AnimationHelperSetup markers.
-    // Recursively looks through their children until animation player found.
-    mut commands: Commands,
-    to_setup: Query<Entity, With<AnimationHelperSetup>>,
-    children: Query<&Children>,
-    players: Query<&AnimationPlayer>,
-) {
-    for host_entity in to_setup.iter() {
-        if let Some(animation_player) =
-            find_animation_player_entity(host_entity, &children, &players)
-        {
-            commands
-                .entity(host_entity)
-                // This is how to find the animation player later 
-                .insert(AnimationHelper::new(animation_player)); 
-        }
-    }
-}
-
-fn find_animation_player_entity(
-    parent: Entity,
-    children: &Query<&Children>,
-    players: &Query<&AnimationPlayer>,
-) -> Option<Entity> {
-    if let Ok(candidates) = children.get(parent) {
-        // Collect all children.
-        let mut next_candidates: Vec<Entity> = candidates.iter().map(|e| e.to_owned()).collect();
-        while !next_candidates.is_empty() {
-            for candidate in next_candidates.drain(..).collect::<Vec<Entity>>() {
-                // Return child if it is the entity with an AnimationPlayer component.
-                if players.get(candidate).is_ok() {
-                    return Some(candidate);
-                } 
-                // Else recursively get children and add to candidates list.
-                else if let Ok(new) = children.get(candidate) {
-                    next_candidates.extend(new.iter());
-                }
-            }
-        }
-    }
-    None
-}

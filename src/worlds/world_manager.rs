@@ -26,7 +26,7 @@ impl InsightWorld {
 //      Level 2 are the 16 squares surrounding Level 1, which surrounds Level 0.
 //      # of squares in Level i = 8i (except Level 0 has 1 square)
 //      total # of squares up until Level i = (i * 2 + 1) ^ 2
-// The top left square of each level starts with index 0. Index increases clockwise.
+// The x-z bevy grid maps to an x-y grid for plane coordinates. Y coordinate stays the same.
 // Planes in a world do not have to be connected to each other. The outermost edges of the IWorld
 //      form a bordering square boundary.
 //  -----
@@ -36,7 +36,7 @@ impl InsightWorld {
 //  -----
 #[derive(Debug)]
 pub struct IWorld{
-    hashmap: HashMap<(u32, u32), IPlane>,
+    hashmap: HashMap<(u32, i32, u32), IPlane>,
 } 
 
 impl IWorld {
@@ -56,49 +56,17 @@ impl IWorld {
         let mut index = 0.0;
         for plane in planes {
             // IWorld hashmap
-            self.hashmap.insert((plane.level, plane.index), *plane);
+            self.hashmap.insert((plane.x, plane.y, plane.z), *plane);
 
             // Plane transform calculations
-            let mut trans_x: i32 = 0;
-            let mut trans_y: i32  = 0;
-            let mut trans_z: i32 = 0;
-            let top_row = insert_into_vec(0, 2 * plane.level + 1);
-            let right_col = insert_into_vec(2 * plane.level + 1, 4 * 
-                    plane.level + 1);
-            let bottom_row = insert_into_vec(4 * plane.level + 1, 6 * 
-                    plane.level + 1);
-            let mut left_col = insert_into_vec(6 * plane.level + 1, 6 * plane.level + 
-                    1 + plane.level);
-            if plane.level == 1{
-                left_col.pop();
-            }
-            if top_row.contains(&plane.index) {
-                trans_z = -15 * (plane.level as i32);
-                trans_y = 0;
-                trans_x = -15 * (plane.level as i32) + 15 * (plane.index as i32);
-            }
-            if right_col.contains(&plane.index) {
-                trans_x = 15 * (plane.level as i32);
-                trans_y = 0;
-                trans_z = -15 * ((plane.level as i32) - 1) + 15 * ((plane.index as i32) - 2 * 
-                    (plane.level as i32) - 1);
-            }
-            if bottom_row.contains(&plane.index) {
-                trans_z = 15 * (plane.level as i32);
-                trans_y = 0;
-                trans_x = 15 * ((plane.level as i32) - 1) - 15 * ((plane.index as i32) - 4 * 
-                    (plane.level as i32) - 1);
-            }
-            if left_col.contains(&plane.index) {
-                trans_x = -15 * (plane.level as i32);
-                trans_y = 0;
-                let pl = plane.level as i32;
-                trans_z = 15 * (pl - 1) - 15 * ((plane.index as i32) - 6 * pl - 1);
-            }
-            let mut trans = Transform::from_xyz(0.0, 0.0, 0.0);
-            if plane.level != 0 {
-                trans = Transform::from_xyz(trans_x as f32, trans_y as f32, trans_z as f32);
-            }
+            let mut trans_x: i32 = plane.x as i32;
+            let trans_y: i32  = plane.y as i32;
+            let mut trans_z: i32 = plane.z as i32;
+            trans_x = 15 * trans_x;
+            trans_z = -15 * trans_z;
+            let trans = Transform::from_xyz(
+                trans_x as f32, trans_y as f32, trans_z as f32
+            );
 
             // Plane
             commands
@@ -129,13 +97,28 @@ impl IWorld {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct IPlane {
    // pub gltfs: Vec<IGltf>,
-    pub level: u32, 
-    pub index: u32, // ranges from 0 to (8 * level - 1)
+    pub x: u32, 
+    pub y: i32,
+    pub z: u32,
 }
 
-// impl IPlane {
-//     pub fn add_gltf() -> Self {}
-// }
+impl IPlane {
+    pub fn new(x: u32, y: i32, z: u32) -> IPlane {
+        Self {
+            x, y, z,
+        }
+    }
+    pub fn get_level(&self) -> u32 {
+        let mut level = 0;
+        if self.x > level {
+            level = self.x;
+        }
+        if self.z > level {
+            level = self.z;
+        }
+        level
+    }
+}
 
 // #[derive(Debug)]
 // pub struct IGltf {
@@ -144,10 +127,6 @@ pub struct IPlane {
 //     pub animation: String,
 // }
 
-pub fn insert_into_vec(start: u32, end: u32) -> Vec<u32> {
-    let mut vec = Vec::new();
-    for i in start..end {
-        vec.push(i);
-    }
-    vec
-}
+// Boundary: Check if square has an adjacent square. 
+// Any side with no adjacent square is part of the boundary.
+
