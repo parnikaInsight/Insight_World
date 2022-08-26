@@ -180,16 +180,16 @@ impl IPlane {
     pub fn new(x: i32, y: i32, z: i32) -> IPlane {
         Self { x, y, z }
     }
-    // pub fn get_level(&self) -> u32 {
-    //     let mut level = 0;
-    //     if self.x > level {
-    //         level = self.x;
-    //     }
-    //     if self.z > level {
-    //         level = self.z;
-    //     }
-    //     level
-    // }
+    pub fn get_level(&self) -> u32 {
+        let mut level = 0;
+        if i32::abs(self.x) > level {
+            level = self.x;
+        }
+        if i32::abs(self.z) > level {
+            level = self.z;
+        }
+        level as u32
+    }
 }
 
 // #[derive(Debug)]
