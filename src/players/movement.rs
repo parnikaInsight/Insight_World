@@ -294,9 +294,9 @@ pub fn get_player_displacement(
                                 }
                             }
                         }
-                        if count > longest_time.len() {
-                            longest_time.push(*time);
-                        }
+                        // if count > longest_time.len() {
+                        //     longest_time.push(*time);
+                        // }
                         count += 1;
                     }
      
@@ -304,43 +304,43 @@ pub fn get_player_displacement(
     //update t
     let mut count = 0;
     let mut elapsed = player.elapsed();
-    for i in longest_time {
+    for i in 2..4 {//longest_time {
         let mut v_count = 0;
-        let v = *transforms.get(&i.to_string()).unwrap();
+        //let v = *transforms.get(&i.to_string()).unwrap();
         let ts_start = i;
         let ts_end = longest_time[count];
-        let lerp = (elapsed - ts_start) / (ts_end - ts_start);
-        for (keyframe_type, num) in v.split_off(v.len() - 1) {
-            match keyframe_type {
-                KeyframeType::Rotation => {
-                    match num {
-                        Num::Quat(q) => {
-                            let rot_start = q;
-                            let (tup_key, tup_num) = v[v_count + 1];
-                            match tup_key {
-                                KeyframeType::Rotation => {
-                                    match num {}
-                                }
-                            }
+        //let lerp = (elapsed - ts_start) / (ts_end - ts_start);
+        // for (keyframe_type, num) in v.split_off(v.len() - 1) {
+        //     match keyframe_type {
+        //         KeyframeType::Rotation => {
+        //             match num {
+        //                 Num::Quat(q) => {
+        //                     let rot_start = q;
+        //                     let (tup_key, tup_num) = v[v_count + 1];
+        //                     match tup_key {
+        //                         KeyframeType::Rotation => {
+        //                             match num {}
+        //                         }
+        //                     }
 
-                            let mut rot_end = v[v_count + 1];
-                            // Choose the smallest angle for the rotation
-                            if rot_end.dot(rot_start) < 0.0 {
-                                rot_end = -rot_end;
-                            }
-                            // Rotations are using a spherical linear interpolation
-                            transform.rotation =
-                                rot_start.normalize().slerp(rot_end.normalize(), lerp);
-                        },
-                        Num::Vec3(v) => continue,
-                    }
-                },
-                _ => continue
-                // KeyframeType::Translation => {},
-                // KeyframeType::Scale => {},
-            }
-            v_count += 1;
-        }
+        //                     let mut rot_end = v[v_count + 1];
+        //                     // Choose the smallest angle for the rotation
+        //                     if rot_end.dot(rot_start) < 0.0 {
+        //                         rot_end = -rot_end;
+        //                     }
+        //                     // Rotations are using a spherical linear interpolation
+        //                     transform.rotation =
+        //                         rot_start.normalize().slerp(rot_end.normalize(), lerp);
+        //                 },
+        //                 Num::Vec3(v) => continue,
+        //             }
+        //         },
+        //         _ => continue
+        //         // KeyframeType::Translation => {},
+        //         // KeyframeType::Scale => {},
+        //     }
+        //     v_count += 1;
+        // }
         count += 1;
     }
 }
