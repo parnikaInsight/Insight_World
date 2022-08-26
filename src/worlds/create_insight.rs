@@ -32,9 +32,9 @@ pub fn create_insight_world(
     // Plane on top right corner of plane_b.
     let plane_c = world_manager::IPlane {
         // pub gltfs: Vec<IGltf>,
-        x: 2,
+        x: -2,
         y: 0,
-        z: 1,
+        z: -1,
     };
     world.add_plane(vec![&plane_a, &plane_b, &plane_c], commands, meshes, materials);
 }

@@ -18,6 +18,7 @@ use std::net::SocketAddr;
 
 use crate::players::{info, movement};
 use crate::animation::animation_helper;
+use crate::worlds::world_manager;
 
 const CUBE_SIZE: f32 = 0.2;
 const BLUE: Color = Color::rgb(0.8, 0.6, 0.2);
@@ -82,6 +83,7 @@ pub fn setup_system(
                 friends: HashSet::new(),
                 health: 100,
                 world: 0,
+                plane: world_manager::IPlane::new(0, 0, 0),
             })
             .insert(info::Velocity::default())
             .insert(info::Information::default())

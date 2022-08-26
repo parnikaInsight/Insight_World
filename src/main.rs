@@ -67,8 +67,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_plugins(DefaultPlugins)
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(DollyCursorGrab)
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default());
-    // .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default());
 
     // Camera
     app.add_startup_system(ggrs_camera::setup_camera)
