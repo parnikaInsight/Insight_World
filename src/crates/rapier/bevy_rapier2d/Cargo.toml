@@ -1,0 +1,50 @@
+[package]
+name = "bevy_rapier2d"
+version = "0.16.0"
+authors = ["Sébastien Crozet <developer@crozet.re>"]
+description = "2-dimensional physics engine in Rust, official Bevy plugin."
+documentation = "http://docs.rs/bevy_rapier2d"
+homepage = "http://rapier.rs"
+repository = "https://github.com/dimforge/bevy_rapier"
+readme = "README.md"
+keywords = [ "physics", "dynamics", "rigid", "real-time", "joints" ]
+license = "Apache-2.0"
+edition = "2021"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+path = "../src/lib.rs"
+required-features = [ "dim2" ]
+
+[features]
+default = [ "dim2", "debug-render" ]
+dim2 = ["bevy/bevy_render"]
+debug-render = [ "bevy/bevy_core_pipeline", "bevy/bevy_pbr", "bevy/bevy_render", "bevy/bevy_sprite", "rapier2d/debug-render" ]
+parallel = [ "rapier2d/parallel" ]
+simd-stable = [ "rapier2d/simd-stable" ]
+simd-nightly = [ "rapier2d/simd-nightly" ]
+wasm-bindgen = [ "rapier2d/wasm-bindgen" ]
+serde-serialize = [ "rapier2d/serde-serialize", "serde" ]
+enhanced-determinism = [ "rapier2d/enhanced-determinism" ]
+
+[dependencies]
+bevy = {git = "https://github.com/paxsethorld/bevy-fork.git", branch = "local-0-8-release", features = ["jpeg"]}
+# bevy = { version = "0.8.0", default-features = false, features = ["bevy_asset", "bevy_scene"] }
+nalgebra = { version = "^0.31.1", features = [ "convert-glam021" ] }
+# Don't enable the default features because we don't need the ColliderSet/RigidBodySet
+rapier2d = "0.14.0"
+bitflags = "1"
+#bevy_prototype_debug_lines = { version = "0.6", optional = true }
+log = "0.4"
+serde = { version = "1", features = [ "derive" ], optional = true}
+
+# [dev-dependencies]
+# bevy = { version = "0.8", default-features = false, features = ["x11"]}
+# oorandom = "11"
+# approx = "0.5.1"
+# glam = { version = "0.21", features = [ "approx" ] }
+
+[package.metadata.docs.rs]
+# Enable all the features when building the docs on docs.rs
+features = [ "debug-render", "serde-serialize" ]

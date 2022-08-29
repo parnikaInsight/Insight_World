@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 use bevy_ggrs::{Rollback, RollbackIdProvider};
 use bevy_mod_picking::*;
-use bevy_pbr::PbrBundle;
-use bevy_pbr::PointLightBundle;
-use bevy_pbr::StandardMaterial;
+use bevy::pbr::PbrBundle;
+use bevy::pbr::PointLightBundle;
+use bevy::pbr::StandardMaterial;
 use bevy_rapier3d::prelude::*;
-use bevy_render::color::Color;
-use bevy_render::mesh::shape;
-use bevy_render::mesh::Mesh;
+use bevy::render::color::Color;
+use bevy::render::mesh::shape;
+use bevy::render::mesh::Mesh;
 use ggrs::{
     Config, P2PSession, PlayerType, SessionBuilder, SpectatorSession,
     SyncTestSession, UdpNonBlockingSocket,
@@ -94,9 +94,9 @@ pub fn setup_system(
 
             // Physics
             .insert(RigidBody::Dynamic)
-            // Prevent player from falling.
-            //.insert(LockedAxes::TRANSLATION_LOCKED | LockedAxes::ROTATION_LOCKED_X) 
-            // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+            //Prevent player from falling.
+            .insert(LockedAxes::TRANSLATION_LOCKED | LockedAxes::ROTATION_LOCKED_X) 
+            .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
 
             // Animation Helper
             .insert(animation_helper::AnimationHelperSetup)

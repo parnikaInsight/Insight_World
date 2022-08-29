@@ -3,30 +3,30 @@ name = "InsightWorld"
 version = "0.1.0"
 edition = "2021"
 
+# Do NOT do cargo update
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy = {version = "0.8.0", features = ["jpeg"]} # with default-features = false, cursor grab panicks bc calls unwrap on None
+#bevy = {version = "0.8.0", features = ["jpeg"]} # with default-features = false, cursor grab panicks bc calls unwrap on None
+bevy = {git = "https://github.com/paxsethorld/bevy-fork.git", branch = "local-0-8-release", features = ["jpeg"]}
 rand = "0.8.5"
 noise = "0.7.0"
 glam = "0.21.2"
-bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "main"} # {path = "./src/crates/bevy_dolly"} #updated for bevy 0.8
-dolly = "0.3.1"
-bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "main"} #updated for bevy 0.8
-bevy_mod_raycast = { git = "https://github.com/paxsethorld/bevy_mod_raycast.git", branch = "main" } #updated for bevy 0.8
-bevy_rapier3d = "0.16.0" #https://github.com/devil-ira/bevy_rapier", branch = "update-to-bevy-0.8" }
-bevy_egui = "0.15.0"
-bevy-inspector-egui = "0.12.1"
+bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "trial#2"} # {path = "./src/crates/bevy_dolly"} #updated for bevy 0.8
+bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "trial#2"} #updated for bevy 0.8
+bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d"}
+# bevy_rapier3d = "0.16.0" #https://github.com/devil-ira/bevy_rapier", branch = "update-to-bevy-0.8" }
+# bevy_egui = "0.15.0"
+# bevy-inspector-egui = "0.12.1"
 bevy-scene-hook = "4.0"
 bytemuck = { version = "1.7", features=["derive"]}
 instant = "0.1"
 log = "0.4"
 ggrs = { git = "https://github.com/gschup/ggrs", features=["sync-send"]}
-bevy_ggrs = {git = "https://github.com/paxsethorld/bevy_ggrs.git"}#updated for bevy 0.8
+bevy_ggrs = {git = "https://github.com/paxsethorld/bevy_ggrs.git", branch = "trial#2"}#updated for bevy 0.8
 structopt = "0.3"
 serde = "1.0.130"
 serde_json = "1.0"
-bevy_render = "0.8.0"
-bevy_pbr = "0.8.0"
+
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -35,5 +35,5 @@ opt-level = 3
 [profile.dev]
 opt-level = 1
 
-[patch.crates-io]
-nalgebra = { git = "https://github.com/dimforge/nalgebra" }
+# [patch.crates-io]
+# nalgebra = { git = "https://github.com/dimforge/nalgebra" } #for rapier

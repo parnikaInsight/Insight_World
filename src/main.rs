@@ -2,10 +2,10 @@
 
 use bevy::prelude::*;
 use bevy_dolly::prelude::*;
-use bevy_egui::EguiPlugin;
+//use bevy_egui::EguiPlugin;
 use bevy_ggrs::{GGRSPlugin, SessionType};
-use bevy_inspector_egui::WorldInspectorPlugin;
-use bevy_mod_picking::*;
+//use bevy_inspector_egui::WorldInspectorPlugin;
+//use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
 
 mod animation;
@@ -65,7 +65,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-        .add_plugins(DefaultPickingPlugins)
         .add_plugin(DollyCursorGrab)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default());
@@ -88,8 +87,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //  .add_system(play::play_scene);
 
     //egui
-    app.add_plugin(EguiPlugin)
-        .add_plugin(WorldInspectorPlugin::new()); // Records all assets.
+    // app.add_plugin(EguiPlugin)
+    //     .add_plugin(WorldInspectorPlugin::new()); // Records all assets.
 
     app.run();
 

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+//use bevy_rapier3d::prelude::*;
 
 use crate::animation::play;
 
@@ -16,10 +16,10 @@ pub fn create_default_plane(
             mesh: meshes.add(Mesh::from(shape::Plane { size: 15.0 })), //PLANE_SIZE
             material: materials.add(Color::rgb(0.5, 0.5, 0.5).into()),
             ..Default::default()
-        })
-        .insert(RigidBody::Fixed)
-        .insert(Collider::cuboid(7.5, 7.5, 7.5)) //half the cube size
-        .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+        });
+        // .insert(RigidBody::Fixed)
+        // .insert(Collider::cuboid(7.5, 7.5, 7.5)) //half the cube size
+        // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
 
     // Light
     commands.spawn_bundle(PointLightBundle {

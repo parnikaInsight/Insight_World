@@ -150,10 +150,10 @@ impl IWorld {
                     transform: trans,
                     ..Default::default()
                 })
-                .insert(RigidBody::Fixed);
+               .insert(RigidBody::Fixed)
                 //half the cube size
-                // .insert(Collider::cuboid(7.5, 7.5, 7.5))
-                // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+                .insert(Collider::cuboid(7.5, 7.5, 7.5))
+                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
 
             // Light
             commands.spawn_bundle(PointLightBundle {
