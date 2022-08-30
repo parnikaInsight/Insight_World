@@ -22,6 +22,7 @@ use worlds::{create_insight, player};
 
 const FPS: usize = 60;
 const ROLLBACK_DEFAULT: &str = "rollback_default";
+const ROLLBACK_DEFAULT2: &str = "rollback_default2"; 
 
 // cargo run -- --local-port 7000 --players localhost 127.0.0.1:7001
 // cargo run -- --local-port 7001 --players 127.0.0.1:7000 localhost
@@ -43,10 +44,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_rollback_type::<Transform>()
         .register_rollback_type::<info::Velocity>()
         // These systems will be executed as part of the advance frame update.
-        .with_rollback_schedule(Schedule::default().with_stage(
-            ROLLBACK_DEFAULT,
-            SystemStage::parallel().with_system(movement::animate_moving_player),
-        ))
+        .with_rollback_schedule(Schedule::default()
+            .with_stage(
+                ROLLBACK_DEFAULT,
+                SystemStage::parallel()
+                    //.with_system(movement::animate_moving_player)
+                    .with_system(movement::translate_player),
+            )
+            .with_stage_after(
+                ROLLBACK_DEFAULT,
+                ROLLBACK_DEFAULT2,
+                SystemStage::parallel()
+                    .with_system(movement::animate_moving_player),
+                   // .with_system(movement::translate_player),
+            )
+        )
         .build(&mut app);
 
     // GGRS Setup
