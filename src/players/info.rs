@@ -55,7 +55,8 @@ pub struct MovementTarget {
 impl Default for MovementTarget {
     fn default() -> Self {
         return Self {
-            current_target: Some(Vec3::ZERO),
+           // current_target: Some(Vec3::ZERO),
+           current_target: None,
         };
     }
 }

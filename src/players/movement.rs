@@ -61,6 +61,7 @@ pub fn animate_moving_player(
         //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
         for (player_ent, mut player) in &mut player {
             if helper.player_entity.id() == player_ent.id() {
+                println!("anim");
                 match p.state.state {
                     info::PlayerStateEnum::IDLE => {
                         if p.state.animation.is_none() || p.state.animation.unwrap() != 0 {
@@ -107,31 +108,28 @@ pub fn translate_player(
         //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
         for (player_ent, mut player) in &mut player {
             if helper.player_entity.id() == player_ent.id() {
+                println!("translate");               
                 let mut direction = Vec3::default();
-
+                let mut turn_bool = false;
                 // W
                 if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
                     direction.z -= 1.0;
+                    turn_bool = true;
                 }
                 // S
                 if input & INPUT_UP == 0 && input & INPUT_DOWN != 0 {
                     direction.z += 1.0;
+                    turn_bool = true;
                 }
                 // A
                 if input & INPUT_LEFT != 0 && input & INPUT_RIGHT == 0 {
                     direction.x -= 1.0;
+                    turn_bool = true;
                 }
                 // D
                 if input & INPUT_LEFT == 0 && input & INPUT_RIGHT != 0 {
                     direction.x += 1.0;
-                }
-
-                if direction.length() > 0.0 {
-                    p.target.current_target = None;
-                }
-
-                if let Some(current_target) = p.target.current_target {
-                    direction = current_target - t.translation;
+                    turn_bool = true;
                 }
 
                 if direction.length() > time.delta_seconds() * p.speed.speed {
@@ -153,13 +151,14 @@ pub fn translate_player(
                     }
                     p.state.state = info::PlayerStateEnum::IDLE;
                 }
-
-                let angle_to_target = t.rotation.angle_between(*target_rot);
-                if angle_to_target > 0.0 {
-                    let t2 = turn_speed / angle_to_target;
-                    t.rotation = t
-                        .rotation
-                        .slerp(*target_rot, 1.0_f32.min(t2 * time.delta_seconds()));
+                if turn_bool { // Bool prevents synched player rotation
+                    let angle_to_target = t.rotation.angle_between(*target_rot);
+                    if angle_to_target > 0.0 {
+                        let t2 = turn_speed / angle_to_target;
+                        t.rotation = t
+                            .rotation
+                            .slerp(*target_rot, 1.0_f32.min(t2 * time.delta_seconds()));
+                    }
                 }
             }
         }
