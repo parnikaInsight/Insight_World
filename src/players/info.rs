@@ -30,6 +30,7 @@ impl Player {
 pub enum PlayerStateEnum {
     IDLE,
     MOVING,
+    POWER,
 }
 
 #[derive(Component, Debug)]

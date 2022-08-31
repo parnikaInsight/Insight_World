@@ -11,6 +11,7 @@ pub fn setup_character(
     commands.insert_resource(CharacterAnimations(vec![
         asset_server.load("mixamo/idle.glb#Animation0"),
         asset_server.load("mixamo/shoot.glb#Animation0"),
+        asset_server.load("mixamo/flip_uppercut.glb#Animation0"),
     ]));
 }
 

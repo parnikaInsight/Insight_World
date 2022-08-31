@@ -12,6 +12,7 @@ const INPUT_UP: u8 = 1 << 0;
 const INPUT_DOWN: u8 = 1 << 1;
 const INPUT_LEFT: u8 = 1 << 2;
 const INPUT_RIGHT: u8 = 1 << 3;
+const POWER: u8 = 1 << 4;
 
 #[repr(C)]
 #[derive(Copy, Clone, PartialEq, Pod, Zeroable)]
@@ -35,10 +36,11 @@ pub fn input(_handle: In<PlayerHandle>, keyboard_input: Res<Input<KeyCode>>) -> 
     if keyboard_input.pressed(KeyCode::D) {
         input |= INPUT_RIGHT;
     }
+    if keyboard_input.pressed(KeyCode::LShift) {
+        input |= POWER;
+    }
 
     BoxInput { inp: input }
-    // let vec = vec![BoxInput { inp: input }];
-    // commands.insert_resource(vec);
 }
 
 pub fn animate_moving_player(
@@ -61,11 +63,10 @@ pub fn animate_moving_player(
         //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
         for (player_ent, mut player) in &mut player {
             if helper.player_entity.id() == player_ent.id() {
-                println!("anim");
                 match p.state.state {
                     info::PlayerStateEnum::IDLE => {
                         if p.state.animation.is_none() || p.state.animation.unwrap() != 0 {
-                            player.play(animations.0[0].clone_weak()).repeat();
+                            player.play(animations.0[0].clone_weak());
                             p.state.animation = Some(0);
                         }
                     }
@@ -79,6 +80,17 @@ pub fn animate_moving_player(
                                 .set_speed(1.3)
                                 .repeat();
                             p.state.animation = Some(1);
+                        }
+                    }
+                    info::PlayerStateEnum::POWER => {
+                        if p.state.animation.is_none() || p.state.animation.unwrap() != 2 {
+                            player
+                                .cross_fade(
+                                    animations.0[2].clone_weak(),
+                                    Duration::from_secs_f32(0.25),
+                                )
+                                .set_speed(1.3);
+                            p.state.animation = Some(0); //power once then go to idle
                         }
                     }
                 };
@@ -108,8 +120,14 @@ pub fn translate_player(
         //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
         for (player_ent, mut player) in &mut player {
             if helper.player_entity.id() == player_ent.id() {
-                println!("translate");               
                 let mut direction = Vec3::default();
+
+                // Power
+                if input & POWER != 0 {
+                    p.state.state = info::PlayerStateEnum::POWER;
+                    break;
+                }
+
                 let mut turn_bool = false;
                 // W
                 if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
