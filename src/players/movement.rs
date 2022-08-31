@@ -96,62 +96,70 @@ pub fn translate_player(
         &mut Transform,
         &mut info::Player,
         &animation_helper::AnimationHelper,
-        &info::Velocity,
     )>,
     time: Res<Time>,
+    mut target_rot: Local<Quat>,
 ) {
-    for (e, children, mut t, mut p, helper, speed) in query.iter_mut() {
+    let turn_speed: f32 = 15.0;
+
+    for (e, children, mut t, mut p, helper) in query.iter_mut() {
         let input = inputs[p.handle as usize].0.inp;
+        //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
+        for (player_ent, mut player) in &mut player {
+            if helper.player_entity.id() == player_ent.id() {
+                let mut direction = Vec3::default();
 
-        // W
-        if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
-            //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
-
-            for (player_ent, mut player) in &mut player {
-                if helper.player_entity.id() == player_ent.id() {
-                    println!("Player trans W");
-                    let mut direction = Vec3::default();
+                // W
+                if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
+                    direction.z -= 1.0;
+                }
+                // S
+                if input & INPUT_UP == 0 && input & INPUT_DOWN != 0 {
                     direction.z += 1.0;
-                    if direction.length() > time.delta_seconds() * speed.z {
-                        let normalized_dir = direction.normalize();
-                        t.translation += normalized_dir * speed.z * time.delta_seconds();
-                        p.state.state = info::PlayerStateEnum::MOVING;
-                    } else {
-                        t.translation = Vec3::ZERO;
-                        p.state.state = info::PlayerStateEnum::IDLE;
-                    }
+                }
+                // A
+                if input & INPUT_LEFT != 0 && input & INPUT_RIGHT == 0 {
+                    direction.x -= 1.0;
+                }
+                // D
+                if input & INPUT_LEFT == 0 && input & INPUT_RIGHT != 0 {
+                    direction.x += 1.0;
+                }
 
-                    //t.translation.z += 0.1;
+                if direction.length() > 0.0 {
+                    p.target.current_target = None;
                 }
-            }
-        }
-        // S
-        if input & INPUT_UP == 0 && input & INPUT_DOWN != 0 {
-            //println!("pressed S");
-            for (player_ent, mut player) in &mut player {
-                if helper.player_entity.id() == player_ent.id() {
-                    //println!("Player animation S");
-                    t.translation.z -= 0.1;
+
+                if let Some(current_target) = p.target.current_target {
+                    direction = current_target - t.translation;
                 }
-            }
-        }
-        // A
-        if input & INPUT_LEFT != 0 && input & INPUT_RIGHT == 0 {
-            //println!("pressed A");
-            for (player_ent, mut player) in &mut player {
-                if helper.player_entity.id() == player_ent.id() {
-                    //println!("Player animation A");
-                    t.translation.x += 0.1;
+
+                if direction.length() > time.delta_seconds() * p.speed.speed {
+                    let normalized_dir = direction.normalize();
+                    t.translation += normalized_dir * p.speed.speed * time.delta_seconds();
+
+                    // Rotation
+                    let angle = normalized_dir.angle_between(Vec3::new(0.0, 0.0, 1.0));
+                    *target_rot = Quat::from_rotation_y(if normalized_dir.x > 0.0 {
+                        angle
+                    } else {
+                        -angle
+                    });
+
+                    p.state.state = info::PlayerStateEnum::MOVING;
+                } else {
+                    if let Some(current_target) = p.target.current_target {
+                        t.translation = current_target;
+                    }
+                    p.state.state = info::PlayerStateEnum::IDLE;
                 }
-            }
-        }
-        // D
-        if input & INPUT_LEFT == 0 && input & INPUT_RIGHT != 0 {
-            //println!("pressed D");
-            for (player_ent, mut player) in &mut player {
-                if helper.player_entity.id() == player_ent.id() {
-                    //println!("Player animation D");
-                    t.translation.x -= 0.1;
+
+                let angle_to_target = t.rotation.angle_between(*target_rot);
+                if angle_to_target > 0.0 {
+                    let t2 = turn_speed / angle_to_target;
+                    t.rotation = t
+                        .rotation
+                        .slerp(*target_rot, 1.0_f32.min(t2 * time.delta_seconds()));
                 }
             }
         }

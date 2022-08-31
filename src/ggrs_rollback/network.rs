@@ -85,8 +85,9 @@ pub fn setup_system(
                 world: 0,
                 plane: world_manager::IPlane::new(0, 0, 0),
                 state: info::PlayerState::default(),
+                target: info::MovementTarget::default(),
+                speed: info::MovementSpeed { speed: 3.0 },
             })
-            .insert(info::Velocity::default())
             .insert(info::Information::default())
             .insert_bundle(PickableBundle::default()) // Player can be clicked.
 

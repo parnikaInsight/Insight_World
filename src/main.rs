@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_input_system(movement::input)
         // Register types of components and resources you want to be rolled back.
         .register_rollback_type::<Transform>()
-        .register_rollback_type::<info::Velocity>()
+        //.register_rollback_type::<info::Velocity>()
         // These systems will be executed as part of the advance frame update.
         .with_rollback_schedule(Schedule::default()
             .with_stage(

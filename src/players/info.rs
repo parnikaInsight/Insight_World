@@ -16,6 +16,8 @@ pub struct Player {
     pub world: u32,
     pub plane: world_manager::IPlane,
     pub state: PlayerState,
+    pub target: MovementTarget,
+    pub speed: MovementSpeed,
 }
 
 impl Player {
@@ -45,12 +47,23 @@ impl Default for PlayerState {
     }
 }
 
+#[derive(Component, Debug)]
+pub struct MovementTarget {
+    pub current_target: Option<Vec3>,
+}
+
+impl Default for MovementTarget {
+    fn default() -> Self {
+        return Self {
+            current_target: Some(Vec3::ZERO),
+        };
+    }
+}
+
 // Components that should be saved/loaded need to implement the `Reflect` trait
-#[derive(Default, Reflect, Component)]
-pub struct Velocity {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
+#[derive(Component, Default, Debug)]
+pub struct MovementSpeed{
+    pub speed: f32,
 }
 
 #[derive(Default, Component)]
