@@ -1,0 +1,19 @@
+[workspace]
+members = ["bevy_rapier2d", "bevy_rapier3d"]
+resolver = "2"
+
+[profile.release]
+codegen-units = 1
+
+[patch.crates-io]
+#nalgebra = { path = "../nalgebra" }
+#parry2d = { path = "../parry/crates/parry2d" }
+#parry3d = { path = "../parry/crates/parry3d" }
+#rapier2d = { path = "../rapier/crates/rapier2d" }
+#rapier3d = { path = "../rapier/crates/rapier3d" }
+
+#nalgebra = { git = "https://github.com/dimforge/nalgebra", branch = "dev" }
+#parry2d = { git = "https://github.com/dimforge/parry", branch = "master" }
+#parry3d = { git = "https://github.com/dimforge/parry", branch = "master" }
+#rapier2d = { git = "https://github.com/dimforge/rapier", branch = "master" }
+#rapier3d = { git = "https://github.com/dimforge/rapier", branch = "master" }

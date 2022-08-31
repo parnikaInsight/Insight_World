@@ -9,14 +9,8 @@ pub fn setup_character(
 ) {
     // Insert a resource with the current scene information
     commands.insert_resource(CharacterAnimations(vec![
-        asset_server.load("mixamo/from_blender.glb#Animation0"),
-        asset_server.load("mixamo/walk_forward.glb#Animation0"),
-        asset_server.load("mixamo/back.glb#Animation0"),
-        asset_server.load("mixamo/left.glb#Animation0"),
-        asset_server.load("mixamo/right_crouch.glb#Animation0"),
-
-        asset_server.load("mixamo/shoot.glb#Animation0"),
         asset_server.load("mixamo/idle.glb#Animation0"),
+        asset_server.load("mixamo/shoot.glb#Animation0"),
     ]));
 }
 

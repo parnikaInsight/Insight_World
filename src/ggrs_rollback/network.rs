@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 use bevy_ggrs::{Rollback, RollbackIdProvider};
 use bevy_mod_picking::*;
-use bevy_pbr::PbrBundle;
-use bevy_pbr::PointLightBundle;
-use bevy_pbr::StandardMaterial;
+use bevy::pbr::PbrBundle;
+use bevy::pbr::PointLightBundle;
+use bevy::pbr::StandardMaterial;
 use bevy_rapier3d::prelude::*;
-use bevy_render::color::Color;
-use bevy_render::mesh::shape;
-use bevy_render::mesh::Mesh;
+use bevy::render::color::Color;
+use bevy::render::mesh::shape;
+use bevy::render::mesh::Mesh;
 use ggrs::{
     Config, P2PSession, PlayerType, SessionBuilder, SpectatorSession,
     SyncTestSession, UdpNonBlockingSocket,
@@ -60,7 +60,7 @@ pub fn setup_system(
     let query = &args[1];
 
     // Add player scene.
-    let player_handle = asset_server.load("mixamo/forward.glb#Scene0");
+    let player_handle = asset_server.load("mixamo/shoot.glb#Scene0");
 
     // Players identified in ggrs by handles starting from 0.
     for handle in 0..num_players {

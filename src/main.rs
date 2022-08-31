@@ -2,9 +2,9 @@
 
 use bevy::prelude::*;
 use bevy_dolly::prelude::*;
-use bevy_egui::EguiPlugin;
+//use bevy_egui::EguiPlugin;
 use bevy_ggrs::{GGRSPlugin, SessionType};
-use bevy_inspector_egui::WorldInspectorPlugin;
+//use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
 
@@ -95,8 +95,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //  .add_system(play::play_scene);
 
     //egui
-    app.add_plugin(EguiPlugin)
-        .add_plugin(WorldInspectorPlugin::new()); // Records all assets.
+    // app.add_plugin(EguiPlugin)
+    //     .add_plugin(WorldInspectorPlugin::new()); // Records all assets.
 
     app.run();
 
