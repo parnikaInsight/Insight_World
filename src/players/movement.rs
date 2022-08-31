@@ -1,12 +1,12 @@
 #![allow(dead_code)]
 
 use bevy::prelude::*;
-use bevy_ggrs::Rollback;
 use bytemuck::{Pod, Zeroable};
 use ggrs::{InputStatus, PlayerHandle};
+use std::time::Duration;
 
-use crate::players::info;
 use crate::animation::{animation_helper, play};
+use crate::players::info;
 
 const INPUT_UP: u8 = 1 << 0;
 const INPUT_DOWN: u8 = 1 << 1;
@@ -36,7 +36,9 @@ pub fn input(_handle: In<PlayerHandle>, keyboard_input: Res<Input<KeyCode>>) -> 
         input |= INPUT_RIGHT;
     }
 
-    BoxInput { inp: input }
+    BoxInput { inp: input } 
+    // let vec = vec![BoxInput { inp: input }];
+    // commands.insert_resource(vec);
 }
 
 pub fn animate_moving_player(
@@ -44,19 +46,18 @@ pub fn animate_moving_player(
     // assets: Res<Assets<AnimationClip>>,
     mut player: Query<(Entity, &mut AnimationPlayer)>,
     inputs: Res<Vec<(BoxInput, InputStatus)>>,
-    mut query: Query<
-        (
-            Entity,
-            &Children,
-            &mut Transform,
-            &info::Player,
-            &animation_helper::AnimationHelper,
-        ),
-        With<Rollback>,
-    >,
+    //inputs: Res<Vec<BoxInput>>,
+    mut query: Query<(
+        Entity,
+        &Children,
+        &mut Transform,
+        &mut info::Player,
+        &animation_helper::AnimationHelper,
+    )>,
 ) {
-    for (e, children, mut t, p, helper) in query.iter_mut() {
+    for (e, children, mut t, mut p, helper) in query.iter_mut() {
         let input = inputs[p.handle as usize].0.inp;
+        //let input = inputs[p.handle as usize].inp;
 
         // W
         if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
@@ -67,9 +68,36 @@ pub fn animate_moving_player(
 
             for (player_ent, mut player) in &mut player {
                 if helper.player_entity.id() == player_ent.id() {
-                    player.play(animations.0[1].clone_weak());
+                    match p.state.state {
+                        info::PlayerStateEnum::IDLE => {
+                            println!("idle");
+                            if p.state.animation.is_none() || p.state.animation.unwrap() != 0 {
+                                println!("none123");
+                                player.play(animations.0[1].clone_weak()).repeat();
+                                println!("none");
+
+                                p.state.animation = Some(0);
+                            }
+                        }
+                        info::PlayerStateEnum::MOVING => {
+                            println!("moving heyyyyyyyyyyyyyy");
+                        }
+                    };
+
+                    //player.play(animations.0[5].clone_weak()).repeat();
+
+                    // player.play(animations.0[6].clone_weak());
+                    // println!("anim");
+                    // player//cross fade requires animation before it?
+                    //     .cross_fade(
+                    //         animations.0[5].clone_weak(),
+                    //         Duration::from_secs_f32(0.25),
+                    //     )
+                    //     .set_speed(1.3)
+                    //     .repeat();
+
                     //println!("Player animation W");
-                    t.translation.z += 0.1;
+                    //t.translation.z += 0.1;
 
                     // let a: &Assets<AnimationClip>;
                     // let animation_clip = Assets::get(&animations.0[1].clone_weak());
@@ -83,7 +111,7 @@ pub fn animate_moving_player(
                 if helper.player_entity.id() == player_ent.id() {
                     player.play(animations.0[2].clone_weak());
                     //println!("Player animation S");
-                    t.translation.z -= 0.1;
+                    // t.translation.z -= 0.1;
                 }
             }
         }
@@ -94,7 +122,7 @@ pub fn animate_moving_player(
                 if helper.player_entity.id() == player_ent.id() {
                     player.play(animations.0[3].clone_weak());
                     //println!("Player animation A");
-                    t.translation.x += 0.1;
+                    //t.translation.x += 0.1;
                 }
             }
         }
@@ -105,7 +133,7 @@ pub fn animate_moving_player(
                 if helper.player_entity.id() == player_ent.id() {
                     player.play(animations.0[4].clone_weak());
                     //println!("Player animation D");
-                    t.translation.x -= 0.1;
+                    //t.translation.x -= 0.1;
                 }
             }
         }
@@ -128,9 +156,8 @@ pub fn translate_player(
     time: Res<Time>,
 ) {
     for (e, children, mut t, p, helper, speed) in query.iter_mut() {
-        //let input = inputs[p.handle as usize].inp;
         let input = inputs[p.handle as usize].0.inp;
-        
+
         // W
         if input & INPUT_UP != 0 && input & INPUT_DOWN == 0 {
             //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
