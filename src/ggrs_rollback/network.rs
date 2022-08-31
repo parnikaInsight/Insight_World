@@ -60,7 +60,7 @@ pub fn setup_system(
     let query = &args[1];
 
     // Add player scene.
-    let player_handle = asset_server.load("mixamo/walk_forward.glb#Scene0");
+    let player_handle = asset_server.load("mixamo/forward.glb#Scene0");
 
     // Players identified in ggrs by handles starting from 0.
     for handle in 0..num_players {

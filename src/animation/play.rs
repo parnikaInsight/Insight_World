@@ -11,11 +11,12 @@ pub fn setup_character(
     commands.insert_resource(CharacterAnimations(vec![
         asset_server.load("mixamo/from_blender.glb#Animation0"),
         asset_server.load("mixamo/walk_forward.glb#Animation0"),
-        asset_server.load("mixamo/backward.glb#Animation0"),
+        asset_server.load("mixamo/back.glb#Animation0"),
         asset_server.load("mixamo/left.glb#Animation0"),
         asset_server.load("mixamo/right_crouch.glb#Animation0"),
-        asset_server.load("silva_main_char.glb#Animation1"),
-        asset_server.load("silva_main_char.glb#Animation0"),
+
+        asset_server.load("mixamo/shoot.glb#Animation0"),
+        asset_server.load("mixamo/idle.glb#Animation0"),
     ]));
 }
 
