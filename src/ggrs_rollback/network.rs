@@ -84,6 +84,7 @@ pub fn setup_system(
                 health: 100,
                 world: 0,
                 plane: world_manager::IPlane::new(0, 0, 0),
+                state: info::PlayerState::default(),
             })
             .insert(info::Velocity::default())
             .insert(info::Information::default())
