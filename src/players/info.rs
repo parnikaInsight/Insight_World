@@ -15,11 +15,33 @@ pub struct Player {
     pub health: usize,
     pub world: u32,
     pub plane: world_manager::IPlane,
+    pub state: PlayerState,
 }
 
 impl Player {
     pub fn add_a_friend(&mut self, friend: u32) {
         self.friends.insert(friend);
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+pub enum PlayerStateEnum {
+    IDLE,
+    MOVING,
+}
+
+#[derive(Component, Debug)]
+pub struct PlayerState {
+    pub state: PlayerStateEnum,
+    pub animation: Option<usize>,
+}
+
+impl Default for PlayerState {
+    fn default() -> Self {
+        PlayerState { 
+            state: PlayerStateEnum::IDLE,
+            animation: None,
+        }
     }
 }
 

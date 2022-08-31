@@ -14,6 +14,8 @@ pub fn setup_character(
         asset_server.load("mixamo/backward.glb#Animation0"),
         asset_server.load("mixamo/left.glb#Animation0"),
         asset_server.load("mixamo/right_crouch.glb#Animation0"),
+        asset_server.load("silva_main_char.glb#Animation1"),
+        asset_server.load("silva_main_char.glb#Animation0"),
     ]));
 }
 

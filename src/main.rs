@@ -27,44 +27,44 @@ const ROLLBACK_DEFAULT2: &str = "rollback_default2";
 // cargo run -- --local-port 7000 --players localhost 127.0.0.1:7001
 // cargo run -- --local-port 7001 --players 127.0.0.1:7000 localhost
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create a GGRS session.
-    let sess_build = network::create_ggrs_session().unwrap();
+    // // Create a GGRS session.
+    // let sess_build = network::create_ggrs_session().unwrap();
 
-    // Start the GGRS session.
-    let sess = network::start_ggrs_session(sess_build).unwrap();
+    // // Start the GGRS session.
+    // let sess = network::start_ggrs_session(sess_build).unwrap();
 
     let mut app = App::new();
     // GGRS Configuration
-    GGRSPlugin::<network::GGRSConfig>::new()
-        // Define frequency of rollback game logic update.
-        .with_update_frequency(FPS)
-        // Define system that returns inputs given a player handle, so GGRS can send the inputs.
-        .with_input_system(movement::input)
-        // Register types of components and resources you want to be rolled back.
-        .register_rollback_type::<Transform>()
-        .register_rollback_type::<info::Velocity>()
-        // These systems will be executed as part of the advance frame update.
-        .with_rollback_schedule(Schedule::default()
-            .with_stage(
-                ROLLBACK_DEFAULT,
-                SystemStage::parallel()
-                    //.with_system(movement::animate_moving_player)
-                    .with_system(movement::translate_player),
-            )
-            .with_stage_after(
-                ROLLBACK_DEFAULT,
-                ROLLBACK_DEFAULT2,
-                SystemStage::parallel()
-                    .with_system(movement::animate_moving_player),
-                   // .with_system(movement::translate_player),
-            )
-        )
-        .build(&mut app);
+    // GGRSPlugin::<network::GGRSConfig>::new()
+    //     // Define frequency of rollback game logic update.
+    //     .with_update_frequency(FPS)
+    //     // Define system that returns inputs given a player handle, so GGRS can send the inputs.
+    //     .with_input_system(movement::input)
+    //     // Register types of components and resources you want to be rolled back.
+    //     .register_rollback_type::<Transform>()
+    //     .register_rollback_type::<info::Velocity>()
+    //     // These systems will be executed as part of the advance frame update.
+    //     .with_rollback_schedule(Schedule::default()
+    //         .with_stage(
+    //             ROLLBACK_DEFAULT,
+    //             SystemStage::parallel()
+    //                 //.with_system(movement::animate_moving_player)
+    //                 .with_system(movement::translate_player),
+    //         )
+    //         .with_stage_after(
+    //             ROLLBACK_DEFAULT,
+    //             ROLLBACK_DEFAULT2,
+    //             SystemStage::parallel()
+    //                 .with_system(movement::animate_moving_player),
+    //                // .with_system(movement::translate_player),
+    //         )
+    //     )
+    //     .build(&mut app);
 
     // GGRS Setup
-    app // Add your GGRS session.
-        .insert_resource(sess)
-        .insert_resource(SessionType::P2PSession);
+    // app // Add your GGRS session.
+    //     .insert_resource(sess)
+    //     .insert_resource(SessionType::P2PSession);
 
     //General Setup
     app.insert_resource(Msaa { samples: 4 })
@@ -95,6 +95,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     app.add_startup_system(create_insight::create_insight_world);
 
+    app.add_startup_system(fake);
+    app.add_system(movement::input.after(network::setup_system));
+    app.add_system(movement::translate_player.after(movement::input));
+    app.add_system(movement::animate_moving_player.after(movement::translate_player));
+
     // Play stationary animations
     //  .add_system(play::play_scene);
 
@@ -105,4 +110,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     app.run();
 
     Ok(())
+}
+
+pub fn fake (mut commands: Commands) {
+    let input = 0;
+    let vec = vec![movement::BoxInput { inp: input }];
+    commands.insert_resource(vec);
 }
