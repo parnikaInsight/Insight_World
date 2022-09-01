@@ -8,10 +8,17 @@ pub fn setup_character(
     asset_server: Res<AssetServer>,
 ) {
     // Insert a resource with the current scene information
-    commands.insert_resource(CharacterAnimations(vec![
-        asset_server.load("mixamo/idle.glb#Animation0"),
+    // TODO: Insert animation rig w/t skin to use between characters
+    commands.insert_resource(CharacterAnimations(vec![ 
+        // // with girl skin
+        // asset_server.load("mixamo/idle.glb#Animation0"), 
+        // asset_server.load("mixamo/shoot.glb#Animation0"),
+        // asset_server.load("mixamo/flip_uppercut.glb#Animation0"),
+        
+        // no skin
+        asset_server.load("mixamo/idle_breathing.glb#Animation0"), 
         asset_server.load("mixamo/shoot.glb#Animation0"),
-        asset_server.load("mixamo/flip_uppercut.glb#Animation0"),
+        asset_server.load("mixamo/flip_punch.glb#Animation0"),      
     ]));
 }
 

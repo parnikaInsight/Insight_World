@@ -1,23 +1,23 @@
-use bevy::prelude::*;
-use bevy_ggrs::{Rollback, RollbackIdProvider};
-use bevy_mod_picking::*;
 use bevy::pbr::PbrBundle;
 use bevy::pbr::PointLightBundle;
 use bevy::pbr::StandardMaterial;
-use bevy_rapier3d::prelude::*;
+use bevy::prelude::*;
 use bevy::render::color::Color;
 use bevy::render::mesh::shape;
 use bevy::render::mesh::Mesh;
+use bevy_ggrs::{Rollback, RollbackIdProvider};
+use bevy_mod_picking::*;
+use bevy_rapier3d::prelude::*;
 use ggrs::{
-    Config, P2PSession, PlayerType, SessionBuilder, SpectatorSession,
-    SyncTestSession, UdpNonBlockingSocket,
+    Config, P2PSession, PlayerType, SessionBuilder, SpectatorSession, SyncTestSession,
+    UdpNonBlockingSocket,
 };
 use std::collections::HashSet;
 use std::env;
 use std::net::SocketAddr;
 
-use crate::players::{info, movement};
 use crate::animation::animation_helper;
+use crate::players::{info, movement};
 use crate::worlds::world_manager;
 
 const CUBE_SIZE: f32 = 0.2;
@@ -47,7 +47,7 @@ pub fn setup_system(
         },
         ..Default::default()
     });
-    
+
     //start creating p2p session
     let num_players = p2p_session
         .map(|s| s.num_players())
@@ -60,13 +60,20 @@ pub fn setup_system(
     let query = &args[1];
 
     // Add player scene.
-    let player_handle = asset_server.load("mixamo/shoot.glb#Scene0");
+    let mut player_handle = asset_server.load("mixamo/shoot.glb#Scene0");
 
     // Players identified in ggrs by handles starting from 0.
     for handle in 0..num_players {
+        if handle == 1 {
+            // TODO
+            player_handle = asset_server.load("mixamo/ninja_tpose.glb#Scene0");
+        }
+        else {
+            player_handle = asset_server.load("mixamo/shoot.glb#Scene0");
+        }
         let entity_id = commands
             // Create player.
-            .spawn_bundle(SceneBundle { 
+            .spawn_bundle(SceneBundle {
                 transform: Transform {
                     translation: Vec3::new(handle as f32, 0.0, -5.0),
                     ..default()
@@ -74,9 +81,8 @@ pub fn setup_system(
                 scene: player_handle.clone(),
                 ..default()
             })
-
             // Add player information.
-            .insert(info::Player { 
+            .insert(info::Player {
                 handle: handle as u32,
                 money: 50,
                 bounties: 3,
@@ -90,16 +96,13 @@ pub fn setup_system(
             })
             .insert(info::Information::default())
             .insert_bundle(PickableBundle::default()) // Player can be clicked.
-
             // Indicates bevy_GGRS that this entity should be saved and loaded.
             .insert(Rollback::new(rip.next_id()))
-
             // Physics
             .insert(RigidBody::Dynamic)
             // Prevent player from falling.
-            //.insert(LockedAxes::TRANSLATION_LOCKED | LockedAxes::ROTATION_LOCKED_X) 
+            //.insert(LockedAxes::TRANSLATION_LOCKED | LockedAxes::ROTATION_LOCKED_X)
             // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
-
             // Animation Helper
             .insert(animation_helper::AnimationHelperSetup)
             .id();
@@ -146,12 +149,12 @@ pub fn create_ggrs_session() -> Result<SessionBuilder<GGRSConfig>, Box<dyn std::
     if query == "0" {
         let player_addr: &String = &String::from("127.0.0.1:7001");
         // Should receive addresses of discovered peers
-        let remote_addr: SocketAddr = player_addr.parse()?; 
+        let remote_addr: SocketAddr = player_addr.parse()?;
         sess_build = sess_build.add_player(PlayerType::Remote(remote_addr), 1)?;
     } else {
         let player_addr: &String = &String::from("127.0.0.1:7000");
         // Should receive addresses of discovered peers
-        let remote_addr: SocketAddr = player_addr.parse()?; 
+        let remote_addr: SocketAddr = player_addr.parse()?;
         sess_build = sess_build.add_player(PlayerType::Remote(remote_addr), 0)?;
     }
 
@@ -162,7 +165,6 @@ pub fn create_ggrs_session() -> Result<SessionBuilder<GGRSConfig>, Box<dyn std::
 pub fn start_ggrs_session(
     sess_build: SessionBuilder<GGRSConfig>,
 ) -> Result<P2PSession<GGRSConfig>, Box<dyn std::error::Error>> {
-
     // Read cmd line arguments: 0 will be 7000, 1 will be 7001
     let args: Vec<String> = env::args().collect();
     let query = &args[1];
@@ -179,4 +181,3 @@ pub fn start_ggrs_session(
 
     Ok(sess)
 }
-
