@@ -81,6 +81,7 @@ pub fn setup_system(
                 scene: player_handle.clone(),
                 ..default()
             })
+            
             // Add player information.
             .insert(info::Player {
                 handle: handle as u32,
@@ -96,13 +97,19 @@ pub fn setup_system(
             })
             .insert(info::Information::default())
             .insert_bundle(PickableBundle::default()) // Player can be clicked.
+            
             // Indicates bevy_GGRS that this entity should be saved and loaded.
             .insert(Rollback::new(rip.next_id()))
+            
             // Physics
-            .insert(RigidBody::Dynamic)
+            //.insert(RigidBody::Dynamic)
             // Prevent player from falling.
-            //.insert(LockedAxes::TRANSLATION_LOCKED | LockedAxes::ROTATION_LOCKED_X)
-            // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+            .insert(LockedAxes::ROTATION_LOCKED)
+            //.insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+            .insert(RigidBody::Dynamic)
+            .insert(Collider::cuboid(0.5, 1.75, 0.25))
+            .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+            
             // Animation Helper
             .insert(animation_helper::AnimationHelperSetup)
             .id();
