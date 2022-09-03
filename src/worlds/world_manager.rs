@@ -83,11 +83,6 @@ impl IWorld {
         let y_half_dist = (15 * (y_max - y_min) / 2) as f32;
         let z_half_dist = (15 * (z_max - z_min) / 2) as f32;
 
-        println!("half {}, {}, {}", x_half, y_half, z_half);
-        println!("x {}, {}", x_min, x_max);
-        println!("y {}, {}", y_min, y_max);
-        println!("z {}, {}", z_min, z_max);
-
         let transform = Transform::from_xyz(
             x_half, 
             y_half, 
@@ -109,7 +104,6 @@ impl IWorld {
             .insert(ColliderDebugColor(
                 Color::hsl(220.0, 1.0, 0.3))
             );
-        println!("boundary");
 
         commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
@@ -150,10 +144,10 @@ impl IWorld {
                     transform: trans,
                     ..Default::default()
                 })
-                .insert(RigidBody::Fixed);
+                .insert(RigidBody::Fixed)
                 //half the cube size
-                // .insert(Collider::cuboid(7.5, 7.5, 7.5))
-                // .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+                .insert(Collider::cuboid(7.5, 0.0, 7.5))
+                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
 
             // Light
             commands.spawn_bundle(PointLightBundle {

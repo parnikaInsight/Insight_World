@@ -17,7 +17,7 @@ mod worlds;
 use animation::{animation_helper, play};
 use default_world::create_default;
 use ggrs_rollback::{ggrs_camera, network};
-use players::{info, movement};
+use players::{info, movement, physics};
 use worlds::{create_insight, player};
 
 const FPS: usize = 60;

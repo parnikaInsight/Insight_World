@@ -37,17 +37,6 @@ pub fn setup_system(
     synctest_session: Option<Res<SyncTestSession<GGRSConfig>>>,
     spectator_session: Option<Res<SpectatorSession<GGRSConfig>>>,
 ) {
-    //center cube
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: CUBE_SIZE })),
-        material: materials.add(PLAYER_COLORS[0.0 as usize].into()),
-        transform: Transform {
-            translation: Vec3::new(0.0, 0.0, -10.0),
-            ..default()
-        },
-        ..Default::default()
-    });
-
     //start creating p2p session
     let num_players = p2p_session
         .map(|s| s.num_players())
@@ -102,12 +91,14 @@ pub fn setup_system(
             .insert(Rollback::new(rip.next_id()))
             
             // Physics
-            //.insert(RigidBody::Dynamic)
-            // Prevent player from falling.
-            .insert(LockedAxes::ROTATION_LOCKED)
-            //.insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+            .insert(LockedAxes::ROTATION_LOCKED) 
             .insert(RigidBody::Dynamic)
-            .insert(Collider::cuboid(0.5, 1.75, 0.25))
+            .with_children(|children| {
+                children.spawn()
+                    .insert(Collider::cuboid(0.5, 1.0, 0.5))
+                    // Position the collider relative to the rigid-body.
+                    .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)));
+            })
             .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
             
             // Animation Helper
@@ -120,6 +111,7 @@ pub fn setup_system(
             commands.entity(entity_id).insert(Me);
         }
     }
+    println!("setup system");
 }
 
 #[derive(Component)]
