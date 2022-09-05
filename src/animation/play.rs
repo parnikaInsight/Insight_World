@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+#[derive(Clone, Debug)]
 pub struct CharacterAnimations(pub Vec<Handle<AnimationClip>>);
 
 // Add player animations.

@@ -7,6 +7,8 @@ use std::time::Duration;
 
 use crate::animation::{animation_helper, play};
 use crate::players::info;
+use crate::systems::{abilities, framework};
+use framework::Movement;
 
 const INPUT_UP: u8 = 1 << 0;
 const INPUT_DOWN: u8 = 1 << 1;
@@ -45,10 +47,7 @@ pub fn input(_handle: In<PlayerHandle>, keyboard_input: Res<Input<KeyCode>>) -> 
 
 pub fn animate_moving_player(
     animations: Res<play::CharacterAnimations>,
-    // assets: Res<Assets<AnimationClip>>,
     mut player: Query<(Entity, &mut AnimationPlayer)>,
-    inputs: Res<Vec<(BoxInput, InputStatus)>>,
-    //inputs: Res<Vec<BoxInput>>,
     mut query: Query<(
         Entity,
         &Children,
@@ -58,43 +57,47 @@ pub fn animate_moving_player(
     )>,
 ) {
     for (e, children, mut t, mut p, helper) in query.iter_mut() {
-        let input = inputs[p.handle as usize].0.inp;
-
         //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
-        for (player_ent, mut player) in &mut player {
+        for (player_ent, mut player) in &mut player { //AnimationPlayer
             if helper.player_entity.id() == player_ent.id() {
-                match p.state.state {
-                    info::PlayerStateEnum::IDLE => {
-                        if p.state.animation.is_none() || p.state.animation.unwrap() != 0 {
-                            player.play(animations.0[0].clone_weak());
-                            p.state.animation = Some(0);
-                        }
-                    }
-                    info::PlayerStateEnum::MOVING => {
-                        if p.state.animation.is_none() || p.state.animation.unwrap() != 1 {
-                            player
-                                .cross_fade(
-                                    animations.0[1].clone_weak(),
-                                    Duration::from_secs_f32(0.25),
-                                )
-                                .set_speed(1.3)
-                                .repeat();
-                            p.state.animation = Some(1);
-                        }
-                    }
-                    info::PlayerStateEnum::POWER => {
-                        if p.state.animation.is_none() || p.state.animation.unwrap() != 2 {
-                            player
-                                .cross_fade(
-                                    animations.0[2].clone_weak(),
-                                    Duration::from_secs_f32(0.25),
-                                )
-                                .set_speed(1.3);
-                            p.state.animation = Some(0); //power once then go to idle
-                        }
-                    }
-                    info::PlayerStateEnum::AFFECTED(handle, ability_id) => {}
-                };
+
+                // ability_id and abilities changed during game 
+                //insert systems::abilities::movement for the ability_id currently in use by player p, else use default movement
+                let girl_ability = abilities::GirlAbility{};
+                girl_ability.movement(&mut p, &mut player, animations.clone());
+
+                // match p.state.state {
+                //     info::PlayerStateEnum::IDLE => {
+                //         if p.state.animation.is_none() || p.state.animation.unwrap() != 0 {
+                //             player.play(animations.0[0].clone_weak());
+                //             p.state.animation = Some(0);
+                //         }
+                //     }
+                //     info::PlayerStateEnum::MOVING => {
+                //         if p.state.animation.is_none() || p.state.animation.unwrap() != 1 {
+                //             player
+                //                 .cross_fade(
+                //                     animations.0[1].clone_weak(),
+                //                     Duration::from_secs_f32(0.25),
+                //                 )
+                //                 .set_speed(1.3)
+                //                 .repeat();
+                //             p.state.animation = Some(1);
+                //         }
+                //     }
+                //     info::PlayerStateEnum::POWER => {
+                //         if p.state.animation.is_none() || p.state.animation.unwrap() != 2 {
+                //             player
+                //                 .cross_fade(
+                //                     animations.0[2].clone_weak(),
+                //                     Duration::from_secs_f32(0.25),
+                //                 )
+                //                 .set_speed(1.3);
+                //             p.state.animation = Some(0); //power once then go to idle
+                //         }
+                //     }
+                //     info::PlayerStateEnum::AFFECTED(ability_id) => {}
+                // };
             }
         }
     }

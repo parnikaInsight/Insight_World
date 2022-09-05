@@ -18,6 +18,8 @@ pub struct Player {
     pub state: PlayerState,
     pub target: MovementTarget,
     pub speed: MovementSpeed,
+    pub ability_id: u64,
+    pub abilities: Vec<u64>,
 }
 
 impl Player {
@@ -31,7 +33,7 @@ pub enum PlayerStateEnum {
     IDLE,
     MOVING,
     POWER,
-    AFFECTED(u32, u64), // Handle of player that is using their ability on you.
+    AFFECTED(u64), // Handle of player that is using their ability on you.
 }
 
 #[derive(Component, Debug)]

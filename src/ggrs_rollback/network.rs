@@ -83,6 +83,8 @@ pub fn setup_system(
                 state: info::PlayerState::default(),
                 target: info::MovementTarget::default(),
                 speed: info::MovementSpeed { speed: 3.0 },
+                ability_id: 0,
+                abilities: Vec::new(),
             })
             .insert(info::Information::default())
             .insert_bundle(PickableBundle::default()) // Player can be clicked.

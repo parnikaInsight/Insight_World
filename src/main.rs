@@ -13,6 +13,7 @@ mod default_world;
 mod ggrs_rollback;
 mod players;
 mod worlds;
+mod systems;
 
 use animation::{animation_helper, play};
 use default_world::create_default;
