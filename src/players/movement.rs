@@ -93,6 +93,7 @@ pub fn animate_moving_player(
                             p.state.animation = Some(0); //power once then go to idle
                         }
                     }
+                    info::PlayerStateEnum::AFFECTED(handle, ability_id) => {}
                 };
             }
         }
@@ -178,7 +179,10 @@ pub fn translate_player(
                             .slerp(*target_rot, 1.0_f32.min(t2 * time.delta_seconds()));
                     }
                 }
+                break;
             }
         }
     }
 }
+
+

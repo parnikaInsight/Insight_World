@@ -31,6 +31,7 @@ pub enum PlayerStateEnum {
     IDLE,
     MOVING,
     POWER,
+    AFFECTED(u32, u64), // Handle of player that is using their ability on you.
 }
 
 #[derive(Component, Debug)]
