@@ -1,13 +1,30 @@
 use bevy::prelude::*;
-use crate::players::info;
-use crate::animation::play;
 
-pub trait Movement {
-    fn movement(
+use crate::ggrs_rollback::network;
+use crate::players::info;
+use crate::animation::{play, animation_helper};
+
+pub trait Power {
+    fn my_movement(
         &self,
         p: &mut info::Player,
         player: &mut AnimationPlayer,
         animations: play::CharacterAnimations,
+        transform: &mut Transform,
+        commands: &mut Commands, 
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+    );
+
+    fn effect(
+        &self,
+        p: &mut info::Player,
+        player: &mut AnimationPlayer,
+        animations: play::CharacterAnimations,
+        transform: &mut Transform,
+        commands: &mut Commands, 
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
     );
 }
 

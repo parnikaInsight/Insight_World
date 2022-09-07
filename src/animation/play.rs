@@ -19,7 +19,13 @@ pub fn setup_character(
         // no skin
         asset_server.load("mixamo/idle_breathing.glb#Animation0"), 
         asset_server.load("mixamo/shoot.glb#Animation0"),
-        asset_server.load("mixamo/flip_punch.glb#Animation0"),      
+        asset_server.load("mixamo/flip_punch.glb#Animation0"),    
+        asset_server.load("mixamo/dance.glb#Animation0"),    
+        asset_server.load("mixamo/straight_punch.glb#Animation0"),    
+        asset_server.load("mixamo/fly_back_death.glb#Animation0"),   
+        asset_server.load("mixamo/jump_attack.glb#Animation0"),    
+        asset_server.load("mixamo/injured.glb#Animation0"),  
+        asset_server.load("mixamo/two_hands_spell.glb#Animation0"),  
     ]));
 }
 

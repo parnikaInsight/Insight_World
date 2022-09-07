@@ -1,0 +1,2 @@
+Limit clicks. Else "effect" on players controlled by power is unexpected. Ex. Health is damaged
+multiple times if hold down LShift for a split second longer.
