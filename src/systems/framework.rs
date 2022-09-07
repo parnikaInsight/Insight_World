@@ -14,6 +14,7 @@ pub trait Power {
         commands: &mut Commands, 
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
+        animations_resource: &mut ResMut<Assets<AnimationClip>>,
     );
 
     fn effect(
@@ -25,6 +26,7 @@ pub trait Power {
         commands: &mut Commands, 
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
+        animations_resource: &mut ResMut<Assets<AnimationClip>>,
     );
 }
 

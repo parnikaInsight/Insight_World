@@ -60,6 +60,7 @@ pub fn animate_moving_player(
         &mut info::Player,
         &animation_helper::AnimationHelper,
     )>,
+    mut animations_resource: ResMut<Assets<AnimationClip>>,
 ) {
     for (e, children, mut t, mut p, helper) in query.iter_mut() {
         //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
@@ -98,7 +99,7 @@ pub fn animate_moving_player(
                         if p.state.animation.is_none() || p.state.animation.unwrap() != 2 {
                             // Change my player's movement according to p.ability_id 
                             let girl_ability = abilities::Spawn_Cube_Ability {};
-                            girl_ability.my_movement(&mut p, &mut player, animations.clone(), &mut t, &mut commands,  &mut meshes, &mut materials);
+                            girl_ability.my_movement(&mut p, &mut player, animations.clone(), &mut t, &mut commands,  &mut meshes, &mut materials, &mut animations_resource);
                         }
                     }
                     // How my player reacts to having the specified power used on them.
@@ -109,7 +110,7 @@ pub fn animate_moving_player(
                         // TODO: Do you need (handle arg) to know whose ability is affecting you?
 
                         let girl_effect = abilities::Spawn_Cube_Ability {};
-                        girl_effect.effect(&mut p, &mut player, animations.clone(), &mut t, &mut commands, &mut meshes, &mut materials);
+                        girl_effect.effect(&mut p, &mut player, animations.clone(), &mut t, &mut commands, &mut meshes, &mut materials, &mut animations_resource);
                     }
                 };
             }
