@@ -34,6 +34,7 @@ impl framework::Power for Dance_Control_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Player describes their own animation when using the power.
 
@@ -57,6 +58,7 @@ impl framework::Power for Dance_Control_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Specifies how a player reacts to this ability being used on them.
         // Program how affected players should be animated.
@@ -68,6 +70,8 @@ impl framework::Power for Dance_Control_Ability {
         p.state.state = info::PlayerStateEnum::IDLE;
     }
 }
+
+//--------------------------------------------------------------------------------------------------------------------
 
 // User animation: punch; Controlled animation: Translated to the right.
 pub struct Punch_Ability {
@@ -92,6 +96,7 @@ impl framework::Power for Punch_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Player describes their own animation when using the power.
 
@@ -115,6 +120,7 @@ impl framework::Power for Punch_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Specifies how a player reacts to this ability being used on them.
         // Program how affected players should be animated.
@@ -129,6 +135,8 @@ impl framework::Power for Punch_Ability {
         p.state.state = info::PlayerStateEnum::IDLE;
     }
 }
+
+//--------------------------------------------------------------------------------------------------------------------
 
 // User animation: jump attack; Controlled animation: Health decreased by 10.
 pub struct Damage_Ability {
@@ -153,6 +161,7 @@ impl framework::Power for Damage_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Player describes their own animation when using the power.
 
@@ -176,6 +185,7 @@ impl framework::Power for Damage_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Specifies how a player reacts to this ability being used on them.
         // Program how affected players should be animated.
@@ -192,6 +202,8 @@ impl framework::Power for Damage_Ability {
         p.state.state = info::PlayerStateEnum::IDLE;
     }
 }
+
+//--------------------------------------------------------------------------------------------------------------------
 
 // User animation: two hands cast spelling; Controlled animation: cubes spawned.
 // TODO: Weapons and spawned objects can have their own powers. Ex. if the player touches the cubes,
@@ -218,6 +230,7 @@ impl framework::Power for Spawn_Cube_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Player describes their own animation when using the power.
 
@@ -226,6 +239,18 @@ impl framework::Power for Spawn_Cube_Ability {
             .cross_fade(animations.0[8].clone_weak(), Duration::from_secs_f32(0.25))
             .set_speed(1.3);
         p.state.animation = Some(0); //power once then go to idle
+
+        // Spawn gltf bird. (TODO: Must add animation_helper to play bird animation)
+        let handle = asset_server.load("nature/phoenix_bird/scene.gltf#Scene0");
+        let mut bird_pos = transform.clone();
+        bird_pos.translation.z -= 15.0;
+        bird_pos.translation.y -= 5.0;
+        bird_pos.scale = Vec3::new(0.1, 0.1, 0.1);
+        commands.spawn_bundle(SceneBundle {
+            transform: bird_pos,
+            scene: handle,
+            ..default()
+        });
 
         // Put ability into kademlia. Abilites stored in kademlia by nodeid.
     }
@@ -241,6 +266,7 @@ impl framework::Power for Spawn_Cube_Ability {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
     ) {
         // Specifies how a player reacts to this ability being used on them.
         // Program how affected players should be animated.
@@ -293,7 +319,7 @@ impl framework::Power for Spawn_Cube_Ability {
             .insert_bundle((danger_cube, player));
 
         // While Bob uses ability, if this player Alice touches one of Bob's cubes, then Alice falls.
-        // TODO: This does not work as intended because the animated cube has a persistent position 
+        // TODO: This does not work as intended because the animated cube has a persistent position
         // at where it was spawned, not where it is in the world during the animation.
         if Vec3::abs_diff_eq(transform.translation, cube_pos.translation, 1.0) {
             p.health -= 1;

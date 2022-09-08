@@ -51,6 +51,7 @@ pub fn animate_moving_player(
     mut commands: Commands, 
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut asset_server: Res<AssetServer>,
     animations: Res<play::CharacterAnimations>,
     mut ani_players: Query<(Entity, &mut AnimationPlayer)>,
     mut query: Query<(
@@ -99,7 +100,7 @@ pub fn animate_moving_player(
                         if p.state.animation.is_none() || p.state.animation.unwrap() != 2 {
                             // Change my player's movement according to p.ability_id 
                             let girl_ability = abilities::Spawn_Cube_Ability {};
-                            girl_ability.my_movement(&mut p, &mut player, animations.clone(), &mut t, &mut commands,  &mut meshes, &mut materials, &mut animations_resource);
+                            girl_ability.my_movement(&mut p, &mut player, animations.clone(), &mut t, &mut commands,  &mut meshes, &mut materials, &mut animations_resource, &mut asset_server);
                         }
                     }
                     // How my player reacts to having the specified power used on them.
@@ -110,7 +111,7 @@ pub fn animate_moving_player(
                         // TODO: Do you need (handle arg) to know whose ability is affecting you?
 
                         let girl_effect = abilities::Spawn_Cube_Ability {};
-                        girl_effect.effect(&mut p, &mut player, animations.clone(), &mut t, &mut commands, &mut meshes, &mut materials, &mut animations_resource);
+                        girl_effect.effect(&mut p, &mut player, animations.clone(), &mut t, &mut commands, &mut meshes, &mut materials, &mut animations_resource, &mut asset_server);
                     }
                 };
             }

@@ -3,7 +3,7 @@ use bevy::utils::hashbrown::HashMap;
 use bevy_rapier3d::prelude::*;
 
 #[derive(Debug)]
-// IWorlds do must be relatively adjacent and grow in a spiral
+// IWorlds are relatively adjacent and grow in a spiral (TODO)
 pub struct InsightWorld {
     pub hashmap: HashMap<usize, IWorld>,
 }
