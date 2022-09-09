@@ -74,6 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .add_plugins(DefaultPlugins)
         .add_plugins(DefaultPickingPlugins)
+        .add_plugin(bevy_transform_gizmo::TransformGizmoPlugin::default())
         .add_plugin(DollyCursorGrab)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default());

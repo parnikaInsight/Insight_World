@@ -42,7 +42,8 @@ pub fn setup_camera(
         })
 
         .insert_bundle(PickingCameraBundle::default())
-        .insert(MainCamera);
+        .insert(MainCamera)
+        .insert(bevy_transform_gizmo::GizmoPickSource::default());
 
     // Directional 'sun' light.
     commands.spawn_bundle(DirectionalLightBundle {

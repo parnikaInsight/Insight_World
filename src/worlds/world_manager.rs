@@ -147,7 +147,9 @@ impl IWorld {
                 .insert(RigidBody::Fixed)
                 //half the cube size
                 .insert(Collider::cuboid(7.5, 0.0, 7.5))
-                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+                .insert_bundle(bevy_mod_picking::PickableBundle::default())
+                .insert(bevy_transform_gizmo::GizmoTransformable);
 
             // Light
             commands.spawn_bundle(PointLightBundle {

@@ -11,10 +11,10 @@ bevy = {git = "https://github.com/paxsethorld/bevy-fork.git", branch = "local-0-
 rand = "0.8.5"
 noise = "0.7.0"
 glam = "0.21.2"
-bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "trial#2"} # {path = "./src/crates/bevy_dolly"} #updated for bevy 0.8
-bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "trial#2"} #updated for bevy 0.8
+bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "trial#2"}  #updated for bevy 0.8
 bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d"}
-# bevy_rapier3d = "0.16.0" #https://github.com/devil-ira/bevy_rapier", branch = "update-to-bevy-0.8" }
+bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "trial#2"} #updated for bevy 0.8
+bevy_transform_gizmo = {git = "https://github.com/paxsethorld/bevy_transform_gizmo.git", branch = "0.8"}
 # bevy_egui = "0.15.0"
 # bevy-inspector-egui = "0.12.1"
 bevy-scene-hook = "4.0"
@@ -27,6 +27,7 @@ structopt = "0.3"
 serde = "1.0.130"
 serde_json = "1.0"
 
+
 [profile.dev.package."*"]
 opt-level = 3
 
@@ -34,5 +35,3 @@ opt-level = 3
 [profile.dev]
 opt-level = 1
 
-# [patch.crates-io]
-# nalgebra = { git = "https://github.com/dimforge/nalgebra" } #for rapier

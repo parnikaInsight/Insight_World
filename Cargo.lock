@@ -12,6 +12,7 @@ dependencies = [
  "bevy_ggrs",
  "bevy_mod_picking",
  "bevy_rapier3d",
+ "bevy_transform_gizmo",
  "bytemuck",
  "ggrs",
  "glam",
@@ -1245,6 +1246,18 @@ dependencies = [
  "bevy_hierarchy 0.8.0 (git+https://github.com/paxsethorld/bevy-fork.git?branch=local-0-8-release)",
  "bevy_math 0.8.0 (git+https://github.com/paxsethorld/bevy-fork.git?branch=local-0-8-release)",
  "bevy_reflect 0.8.0 (git+https://github.com/paxsethorld/bevy-fork.git?branch=local-0-8-release)",
+]
+
+[[package]]
+name = "bevy_transform_gizmo"
+version = "0.2.1"
+source = "git+https://github.com/paxsethorld/bevy_transform_gizmo.git?branch=0.8#70b36ea10693bc8f9496cbd28604c968253b72d6"
+dependencies = [
+ "bevy 0.8.0 (git+https://github.com/paxsethorld/bevy-fork.git?branch=local-0-8-release)",
+ "bevy_mod_picking",
+ "bevy_mod_raycast",
+ "naga",
+ "web-sys",
 ]
 
 [[package]]
