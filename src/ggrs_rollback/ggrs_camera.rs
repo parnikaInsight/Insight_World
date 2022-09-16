@@ -104,7 +104,7 @@ pub fn update_camera(
     }
     let window = windows.get_primary_mut().unwrap();
     if keys.just_pressed(KeyCode::RShift){
-        println!("Rshift pressed");
+        //println!("Rshift pressed");
         toggle_grab_cursor(window);
     }
 
@@ -130,7 +130,7 @@ pub fn update_camera(
     // If locked, rotate camera. Else, move camera.
     let window = windows.get_primary().unwrap();
     if window.cursor_locked() {
-        println!("Cursor locked");
+        //println!("Cursor locked");
         rig.driver_mut::<YawPitch>().rotate_yaw_pitch(
             -0.1 * delta.x * sensitivity.x,
             -0.1 * delta.y * sensitivity.y,
@@ -151,6 +151,6 @@ pub fn update_camera(
 /// Grabs/ungrabs mouse cursor
 fn toggle_grab_cursor(window: &mut Window) {
     window.set_cursor_lock_mode(!window.cursor_locked());
-    println!("Toggling cursor: {}", window.cursor_locked());
+    //println!("Toggling cursor: {}", window.cursor_locked());
     window.set_cursor_visibility(!window.cursor_visible());
 }

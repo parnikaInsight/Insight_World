@@ -219,6 +219,7 @@ pub struct Spawn_Cube_Ability {
 }
 
 // Implemented by power creator.
+// (TODO: what if I wanted the same spawned objects to impact different players differently?)
 impl framework::Power for Spawn_Cube_Ability {
     fn my_movement(
         &self,
@@ -240,7 +241,9 @@ impl framework::Power for Spawn_Cube_Ability {
             .set_speed(1.3);
         p.state.animation = Some(0); //power once then go to idle
 
-        // Spawn gltf bird. (TODO: Must add animation_helper to play bird animation)
+        // Spawn gltf bird. 
+        // (TODO: Must add animation_helper to play bird animation)
+        // (TODO: This runs multiple times so becomes laggy. Spawn gltf once.
         let handle = asset_server.load("nature/phoenix_bird/scene.gltf#Scene0");
         let mut bird_pos = transform.clone();
         bird_pos.translation.z -= 15.0;
@@ -251,6 +254,7 @@ impl framework::Power for Spawn_Cube_Ability {
             scene: handle,
             ..default()
         });
+        println!("Created bird");
 
         // Put ability into kademlia. Abilites stored in kademlia by nodeid.
     }

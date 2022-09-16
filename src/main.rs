@@ -69,7 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             // This must come before default plugin.
             width: 800.,
             height: 800.,
-            title: "Insight".to_owned(),
+            title: "InsightWorld".to_owned(),
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
