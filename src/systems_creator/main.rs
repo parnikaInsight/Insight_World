@@ -16,6 +16,6 @@ pub fn main() {
         })
         .add_plugins(DefaultPlugins);
 
-    app.add_startup_system(player_models::spawn::setup_my_player);
+    //app.add_startup_system(player_models::spawn::setup_my_player);
     app.run();
 }

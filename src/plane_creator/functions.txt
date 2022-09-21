@@ -1,0 +1,3 @@
+Press 1 (while pressing gizmo with right click) => Scale object up
+Press 2 (while pressing gizmo with right click) => Scale object down
+^ Scaling done in bevy_transform_gizmo. 
