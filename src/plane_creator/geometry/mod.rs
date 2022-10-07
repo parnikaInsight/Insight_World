@@ -1,1 +1,1 @@
-pub mod my_plane;
+pub(crate) mod my_plane;

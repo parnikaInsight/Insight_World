@@ -89,9 +89,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_system(animation_helper::setup_helpers); // Find AnimationHelperSetup markers for players.
 
     // // Create default plane.
-    // app.add_startup_system(create_default::create_default_plane);
+     app.add_startup_system(create_default::create_default_plane);
 
-    app.add_startup_system(create_insight::create_insight_world);
+    // app.add_startup_system(create_insight::create_insight_world);
 
     // Play stationary animations
     //  .add_system(play::play_scene);

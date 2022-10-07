@@ -9,7 +9,7 @@ edition = "2021"
 #bevy = {version = "0.8.0", features = ["jpeg"]} # with default-features = false, cursor grab panicks bc calls unwrap on None
 bevy = {git = "https://github.com/paxsethorld/bevy-fork.git", branch = "local-0-8-release", features = ["jpeg"]}
 rand = "0.8.5"
-noise = "0.7.0"
+noise = "0.8.0"
 glam = "0.21.2"
 bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "trial#2"}  #updated for bevy 0.8
 bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d"}
@@ -24,8 +24,10 @@ log = "0.4"
 ggrs = { git = "https://github.com/gschup/ggrs", features=["sync-send"]}
 bevy_ggrs = {git = "https://github.com/paxsethorld/bevy_ggrs.git", branch = "trial#2"}#updated for bevy 0.8
 structopt = "0.3"
-serde = "1.0.130"
-serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.81"
+serde-big-array = "0.4.1"
+rocksdb = "0.19.0"
 
 
 [profile.dev.package."*"]

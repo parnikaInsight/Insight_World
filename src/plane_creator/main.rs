@@ -1,10 +1,14 @@
-use bevy::{prelude::*, window::PresentMode};
+use bevy::{asset::AssetServerSettings, prelude::*, window::PresentMode};
 
+mod asset_server;
+use asset_server::detect_changes;
 mod geometry;
 use geometry::my_plane;
-
 mod camera;
 use camera::pan_orbit;
+mod save;
+mod db;
+use db::db_assets;
 
 fn main() {
     let mut app = bevy::app::App::new(); //new vs empty //bevy::App has more trait implementations than bevy_app
@@ -23,6 +27,11 @@ fn main() {
             present_mode: PresentMode::Fifo,
             ..default()
         })
+        // Tell the asset server to watch for asset changes on disk:
+        .insert_resource (AssetServerSettings {
+            watch_for_changes: true,
+            ..default()
+        })
 
     //Plugins
         .add_plugins(DefaultPlugins) //disable log and winit plugin when put into subapp 
@@ -37,5 +46,7 @@ fn main() {
     //Systems
         .add_system(pan_orbit::pan_orbit_camera)
         .add_system(my_plane::add_block)
+        .add_system(detect_changes::detect_changes)
+        //.add_system(save::save::save_scene)
         .run();
 }
