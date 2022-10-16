@@ -1,17 +1,17 @@
-use bevy::{asset::AssetServerSettings, prelude::*, window::PresentMode};
+use bevy::{asset::AssetServerSettings, prelude::*, window::PresentMode, winit::WinitSettings};
+use bevy_egui::{egui, EguiContext, EguiPlugin};
 
-mod asset_server;
-use asset_server::detect_changes;
 mod geometry;
-use geometry::my_plane;
+use geometry::{my_plane, bevy_ui};
 mod camera;
 use camera::pan_orbit;
 mod save;
 mod db;
-use db::db_assets;
+use db::assets;
 
 fn main() {
     let mut app = bevy::app::App::new(); //new vs empty //bevy::App has more trait implementations than bevy_app
+    
    // app.add_event::<mouse_events::MyCursorMoved>() //never used
     //Events
 
@@ -22,31 +22,46 @@ fn main() {
         .insert_resource(Msaa { samples: 4 }) //remove jaggedness
         .insert_resource(WindowDescriptor { //must come before DefaultPlugins
             title: "InsightWorld Plane Creator".to_string(),
-            width: 1000.0,
-            height: 800.0,
+            width: 1600.0,
+            height: 1000.0,
             present_mode: PresentMode::Fifo,
             ..default()
         })
+        // AssetServerSettings must be inserted before adding the AssetPlugin or DefaultPlugins.
         // Tell the asset server to watch for asset changes on disk:
         .insert_resource (AssetServerSettings {
             watch_for_changes: true,
             ..default()
         })
+        // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
+        .insert_resource(WinitSettings::desktop_app())
+        .insert_resource(bevy_ui::Images {
+            img1: "default_imgs/icon.png".to_owned(), 
+            img2: "default_imgs/icon.png".to_owned(), 
+            img3: "default_imgs/icon.png".to_owned()
+})
+        .init_resource::<bevy_ui::UiState>()
+        //.init_resource::<bevy_ui::Images>()
+        .init_resource::<bevy_ui::Tags>()
+        .init_resource::<assets::PlaneAssets>()
 
     //Plugins
         .add_plugins(DefaultPlugins) //disable log and winit plugin when put into subapp 
         .add_plugins(bevy_mod_picking::DefaultPickingPlugins)
+        .add_plugin(EguiPlugin)
         .add_plugin(bevy_transform_gizmo::TransformGizmoPlugin::default()) // Use TransformGizmoPlugin::default() to align to the scene's coordinate system.
 
     //Startup Systems
        // .add_system(mouse_events::print_mouse_events_system)
         .add_startup_system(my_plane::setup_plane)
         .add_startup_system(pan_orbit::spawn_camera)
+        .add_startup_system(assets::default_assets)
+        .add_startup_system(bevy_ui::configure_visuals)
+        .add_startup_system(bevy_ui::configure_ui_state)
 
     //Systems
         .add_system(pan_orbit::pan_orbit_camera)
-        .add_system(my_plane::add_block)
-        .add_system(detect_changes::detect_changes)
         //.add_system(save::save::save_scene)
+        .add_system(bevy_ui::ui_example)
         .run();
 }

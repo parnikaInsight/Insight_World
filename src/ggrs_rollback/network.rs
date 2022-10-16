@@ -49,16 +49,16 @@ pub fn setup_system(
     let query = &args[1];
 
     // Add player scene.
-    let mut player_handle = asset_server.load("mixamo/shoot.glb#Scene0");
+    let mut player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
 
     // Players identified in ggrs by handles starting from 0.
     for handle in 0..num_players {
         if handle == 1 {
             // TODO
-            player_handle = asset_server.load("mixamo/ninja_tpose.glb#Scene0");
+            player_handle = asset_server.load("default_characters/ninja_tpose.glb#Scene0");
         }
         else {
-            player_handle = asset_server.load("mixamo/shoot.glb#Scene0");
+            player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
         }
         let entity_id = commands
             // Create player.

@@ -15,7 +15,7 @@ bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "
 bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d"}
 bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "trial#2"} #updated for bevy 0.8
 bevy_transform_gizmo = {git = "https://github.com/paxsethorld/bevy_transform_gizmo.git", branch = "0.8"}
-# bevy_egui = "0.15.0"
+bevy_egui = {git = "https://github.com/paxsethorld/bevy_egui.git"}
 # bevy-inspector-egui = "0.12.1"
 bevy-scene-hook = "4.0"
 bytemuck = { version = "1.7", features=["derive"]}

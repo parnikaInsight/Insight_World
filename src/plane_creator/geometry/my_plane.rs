@@ -13,8 +13,9 @@ pub fn setup_plane(
     // plane
     commands
         .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+            mesh: meshes.add(Mesh::from(shape::Plane { size: 3.5 })),
             material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+            transform: Transform::from_xyz(-0.25, 0.0, 0.0),
             ..Default::default()
         })
         .insert_bundle(bevy_mod_picking::PickableBundle::default())
@@ -33,11 +34,11 @@ pub fn setup_plane(
     //db_worlds::put("mini_cube".to_string(), db_worlds::transform_to_string(Transform::from_xyz(1.0, 0.5, 0.0)));
 
     // Load gltf.
-    let player_handle1: Handle<Scene> = asset_server.load("test/pool_ball.glb#Scene0");
+    let player_handle1: Handle<Scene> = asset_server.load("default_gltfs/pool_ball.glb#Scene0");
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            transform: Transform::from_xyz(-0.25, 0.0, 0.0),
             ..Default::default()
         })
         .insert_bundle(bevy_mod_picking::PickableBundle::default())
