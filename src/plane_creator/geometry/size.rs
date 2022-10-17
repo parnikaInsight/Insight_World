@@ -1,4 +1,5 @@
 use bevy::{gltf::Gltf, prelude::*, render::primitives::Aabb, sprite::collide_aabb};
+use bevy::sprite::collide_aabb::Collision;
 use glam::f32::Vec3A;
 
 // with aabb
@@ -71,7 +72,10 @@ pub fn detect_collisions(mut ass: ResMut<Assets<Scene>>, asset_server: Res<Asset
                     if let Some(collision) =
                         bevy::sprite::collide_aabb::collide(comp_pos, comp_dim, iter_pos, iter_dim)
                     {
-                        count += 1;
+                        match collision {
+                            Collision::Inside => count += 1,
+                            _ => (),
+                        }
                     }
                 }
                 index += 1;
