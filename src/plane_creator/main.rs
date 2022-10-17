@@ -3,7 +3,7 @@ use bevy_egui::{egui, EguiContext, EguiPlugin};
 //use bevy::render::primitives::Aabb;
 
 mod geometry;
-use geometry::{my_plane, bevy_ui};
+use geometry::{my_plane, bevy_ui, size};
 mod camera;
 use camera::pan_orbit;
 mod save;
@@ -62,28 +62,11 @@ fn main() {
 
     //Systems
         .add_system(pan_orbit::pan_orbit_camera)
-        //.add_system(lets_get_ass)
+        .add_system(size::detect_collisions)
+        // .add_system(size::sizer2)
         //.add_system(save::save::save_scene)
         .add_system(bevy_ui::ui_example)
         .run();
 }
 
 
-fn lets_get_ass(
-    mut ass: ResMut<Assets<Scene>>,
-    asset_server: Res<AssetServer>,
-    //as_mesh: ResMut<Assets<Mesh>>,
-) {
-    match ass.get_mut(&asset_server.load("default_gltfs/shiba_inu.glb#Scene0")) {
-        Some(res) => {
-            //println!("{:?}", res.world.component_id::<Aabb>());
-            //println!("{:?}", res.world.component_id::<Handle<Mesh>>());
-            let mut query_one = res.world.query::<(&Aabb)>();
-            //let mut query_two = res.world.query::<(&Handle<Mesh>)>();
-            for c in query_one.iter(&res.world) {
-                println!("{:?}", c);
-            }
-        }
-        None => println!("hello"),
-    }
-}
