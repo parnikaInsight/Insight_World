@@ -1,5 +1,6 @@
-use bevy::{asset::AssetServerSettings, prelude::*, window::PresentMode, winit::WinitSettings};
+use bevy::{asset::AssetServerSettings, prelude::*, window::PresentMode, winit::WinitSettings, render::primitives::Aabb};
 use bevy_egui::{egui, EguiContext, EguiPlugin};
+//use bevy::render::primitives::Aabb;
 
 mod geometry;
 use geometry::{my_plane, bevy_ui};
@@ -36,9 +37,9 @@ fn main() {
         // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
         .insert_resource(WinitSettings::desktop_app())
         .insert_resource(bevy_ui::Images {
-            img1: "default_imgs/icon.png".to_owned(), 
-            img2: "default_imgs/icon.png".to_owned(), 
-            img3: "default_imgs/icon.png".to_owned()
+            img1: "default_imgs/emu.png".to_owned(), 
+            img2: "default_imgs/tiger.png".to_owned(), 
+            img3: "default_imgs/soccer_ball.png".to_owned()
 })
         .init_resource::<bevy_ui::UiState>()
         //.init_resource::<bevy_ui::Images>()
@@ -61,7 +62,28 @@ fn main() {
 
     //Systems
         .add_system(pan_orbit::pan_orbit_camera)
+        //.add_system(lets_get_ass)
         //.add_system(save::save::save_scene)
         .add_system(bevy_ui::ui_example)
         .run();
+}
+
+
+fn lets_get_ass(
+    mut ass: ResMut<Assets<Scene>>,
+    asset_server: Res<AssetServer>,
+    //as_mesh: ResMut<Assets<Mesh>>,
+) {
+    match ass.get_mut(&asset_server.load("default_gltfs/shiba_inu.glb#Scene0")) {
+        Some(res) => {
+            //println!("{:?}", res.world.component_id::<Aabb>());
+            //println!("{:?}", res.world.component_id::<Handle<Mesh>>());
+            let mut query_one = res.world.query::<(&Aabb)>();
+            //let mut query_two = res.world.query::<(&Handle<Mesh>)>();
+            for c in query_one.iter(&res.world) {
+                println!("{:?}", c);
+            }
+        }
+        None => println!("hello"),
+    }
 }

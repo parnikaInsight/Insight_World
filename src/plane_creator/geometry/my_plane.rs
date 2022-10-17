@@ -11,34 +11,48 @@ pub fn setup_plane(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // plane
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 3.5 })),
-            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-            transform: Transform::from_xyz(-0.25, 0.0, 0.0),
-            ..Default::default()
-        })
-        .insert_bundle(bevy_mod_picking::PickableBundle::default())
-        .insert(bevy_transform_gizmo::GizmoTransformable);
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Plane { size: 3.5 })),
+        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        ..Default::default()
+    });
+    // .insert_bundle(bevy_mod_picking::PickableBundle::default())
+    // .insert(bevy_transform_gizmo::GizmoTransformable);
     //db_worlds::put("plane".to_string(), db_worlds::transform_to_string(Transform::default()));
 
-    // mini cube
+    //mini cube
     commands
         .spawn_bundle(PbrBundle {
+            visibility: Visibility { is_visible: true },
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+            //material: materials.add(Color::rgb(0.0, 1.0, 0.0).into()),
+            material: materials.add(StandardMaterial {
+                base_color: Color::rgba(1.0, 0.0, 0.0, 0.0),
+                alpha_mode: AlphaMode::Mask(0.5),
+                ..default()
+            }),
             transform: Transform::from_xyz(1.0, 0.5, 0.0),
             ..Default::default()
         })
         .insert_bundle(bevy_mod_picking::PickableBundle::default())
         .insert(bevy_transform_gizmo::GizmoTransformable);
-    //db_worlds::put("mini_cube".to_string(), db_worlds::transform_to_string(Transform::from_xyz(1.0, 0.5, 0.0)));
+    // //db_worlds::put("mini_cube".to_string(), db_worlds::transform_to_string(Transform::from_xyz(1.0, 0.5, 0.0)));
 
     // Load gltf.
     let player_handle1: Handle<Scene> = asset_server.load("default_gltfs/pool_ball.glb#Scene0");
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-            transform: Transform::from_xyz(-0.25, 0.0, 0.0),
+            // visibility: Visibility {
+            //     is_visible: false,
+            // },
+            material: materials.add(StandardMaterial {
+                base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                alpha_mode: AlphaMode::Mask(0.5),
+                ..default()
+            }),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..Default::default()
         })
         .insert_bundle(bevy_mod_picking::PickableBundle::default())
@@ -56,11 +70,6 @@ pub fn setup_plane(
             // .insert(Collider::cuboid(half_size.x, half_size.y, half_size.z))
             // .insert(ColliderMassProperties::Density(density));
         });
-    // db_worlds::put("pool_ball".to_string(), db_worlds::transform_to_string(Transform {
-    //     translation: Vec3::new(0.0, 0.0, 0.0),
-    //     scale: Vec3::new(0.5, 0.5, 0.5),
-    //     ..default()
-    // }));
 
     // light
     commands.spawn_bundle(PointLightBundle {

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_egui::{egui, EguiContext, EguiPlugin, EguiSettings};
 use egui::Response;
 use std::{collections::HashSet, sync::Arc};
@@ -11,29 +12,6 @@ pub struct Images {
     pub img2: String,
     pub img3: String,
 }
-
-// impl FromWorld for Images {
-//     fn from_world(world: &mut World) -> Self {
-//         let asset_server = world.get_resource_mut::<AssetServer>().unwrap();
-//         Self {
-//             img1: asset_server.load("default_images/icon.png"),
-//             img2: asset_server.load("default_images/icon.png"),
-//             img3: asset_server.load("default_images/icon.png"),
-//         }
-//     }
-// }
-
-// impl Default for Images {
-//     fn default() -> Self {
-//         let asset_server = world.get_resource_mut::<AssetServer>().unwrap();
-//         Images {
-//             img1: asset_server.load("default_images/icon.png"),
-//             img2: asset_server.load("default_images/icon.png"),
-//             img3: asset_server.load("default_images/icon.png"),
-//         }
-//      }
-
-// }
 
 #[derive(Default)]
 pub struct Tags {
@@ -61,6 +39,7 @@ pub fn configure_ui_state(mut ui_state: ResMut<UiState>) {
 pub fn ui_example(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut egui_ctx: ResMut<EguiContext>,
     mut ui_state: ResMut<UiState>,
     mut tags: ResMut<Tags>,
@@ -71,6 +50,9 @@ pub fn ui_example(
     mut rendered_texture_id: Local<egui::TextureId>,
     mut rendered_texture_id2: Local<egui::TextureId>,
     mut rendered_texture_id3: Local<egui::TextureId>,
+    mut is_initialized: Local<bool>,
+    mut is_initialized2: Local<bool>,
+    mut is_initialized3: Local<bool>,
     // If you need to access the ids from multiple systems, you can also initialize the `Images`
     // resource while building the app and use `Res<Images>` instead.
     mut images: ResMut<Images>,
@@ -154,16 +136,26 @@ pub fn ui_example(
             ));
 
             // Spawn asset shown in image
-            if response1.hovered() {
+            if response1.hovered() && !*is_initialized {
+                *is_initialized = true;
                 println!("1 DOUBLE CLICKED");
                 if let Some(index) = images.img1.find(".") {
                     let name = images.img1[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
                     let player_handle: Handle<Scene> = asset_server.load(&path[..]);
+
                     commands
                         .spawn_bundle(PbrBundle {
+                            // visibility: Visibility {
+                            //     is_visible: false,
+                            // },
                             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-                            transform: Transform::from_xyz(-0.25, 0.0, 0.0),
+                            material: materials.add(StandardMaterial {
+                                base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                alpha_mode: AlphaMode::Mask(0.5),
+                                ..default()
+                            }),
+                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
@@ -181,7 +173,8 @@ pub fn ui_example(
                         });
                 }
             }
-            if response2.hovered() {
+            if response2.hovered() && !*is_initialized2 {
+                *is_initialized2 = true;
                 println!("2 DOUBLE CLICKED");
                 if let Some(index) = images.img2.find(".") {
                     let name = images.img2[13..index].to_owned();
@@ -189,8 +182,16 @@ pub fn ui_example(
                     let player_handle: Handle<Scene> = asset_server.load(&path[..]);
                     commands
                         .spawn_bundle(PbrBundle {
+                            // visibility: Visibility {
+                            //     is_visible: false,
+                            // },
                             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-                            transform: Transform::from_xyz(-0.25, 0.0, 0.0),
+                            material: materials.add(StandardMaterial {
+                                base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                alpha_mode: AlphaMode::Mask(0.5),
+                                ..default()
+                            }),
+                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
@@ -208,7 +209,8 @@ pub fn ui_example(
                         });
                 }
             }
-            if response3.hovered() {
+            if response3.hovered() && !*is_initialized3 {
+                *is_initialized3 = true;
                 println!("3 DOUBLE CLICKED");
                 if let Some(index) = images.img3.find(".") {
                     let name = images.img3[13..index].to_owned();
@@ -216,8 +218,16 @@ pub fn ui_example(
                     let player_handle: Handle<Scene> = asset_server.load(&path[..]);
                     commands
                         .spawn_bundle(PbrBundle {
+                            // visibility: Visibility {
+                            //     is_visible: false,
+                            // },
                             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-                            transform: Transform::from_xyz(-0.25, 0.0, 0.0),
+                            material: materials.add(StandardMaterial {
+                                base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                alpha_mode: AlphaMode::Mask(0.5),
+                                ..default()
+                            }),
+                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())

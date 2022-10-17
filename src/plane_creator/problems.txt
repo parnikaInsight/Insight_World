@@ -1,0 +1,2 @@
+- search results change w/ spaces in searchbar (ball locs keep switching prob bc &str)
+- repeat search results (soccer ball shown twice)

@@ -5,6 +5,7 @@ edition = "2021"
 
 # Do NOT do cargo update
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [dependencies]
 #bevy = {version = "0.8.0", features = ["jpeg"]} # with default-features = false, cursor grab panicks bc calls unwrap on None
 bevy = {git = "https://github.com/paxsethorld/bevy-fork.git", branch = "local-0-8-release", features = ["jpeg"]}
@@ -14,6 +15,7 @@ glam = "0.21.2"
 bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "trial#2"}  #updated for bevy 0.8
 bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d"}
 bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "trial#2"} #updated for bevy 0.8
+#bevy_mod_picking = {path = "src/crates/bevy_mod_picking"} #updated for bevy 0.8
 bevy_transform_gizmo = {git = "https://github.com/paxsethorld/bevy_transform_gizmo.git", branch = "0.8"}
 bevy_egui = {git = "https://github.com/paxsethorld/bevy_egui.git"}
 # bevy-inspector-egui = "0.12.1"

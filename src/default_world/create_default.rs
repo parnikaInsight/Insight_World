@@ -62,7 +62,7 @@ pub fn create_default_plane(
     });
 
     // // Dome
-    // let player_handle3: Handle<Scene> = asset_server.load("default/parasol/scene.gltf#Scene0");
+    // let player_handle3: Handle<Scene> = asset_server.load("nature/parasol/scene.gltf#Scene0");
     // commands.spawn_bundle(SceneBundle {
     //     transform: Transform {
     //         translation: Vec3::new(0.0, 0.0, 0.0),

@@ -11,6 +11,7 @@ pub fn setup_camera(
     mut windows: ResMut<Windows>,
 ) {
     // Camera Setup
+
     let translation = [-2.0f32, 2.0f32, 5.0f32];
     let transform = Transform::from_translation(bevy::math::Vec3::from_slice(&translation))
         .looking_at(bevy::math::Vec3::ZERO, bevy::math::Vec3::Y);
@@ -23,7 +24,7 @@ pub fn setup_camera(
     commands.spawn().insert(
         CameraRig::builder()
             .with(Position {
-                translation: Vec3::from_slice(&translation),
+                translation: transform.translation,
             })
             .with(Rotation { rotation })
             .with(yaw_pitch)
