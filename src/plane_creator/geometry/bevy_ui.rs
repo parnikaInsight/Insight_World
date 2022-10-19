@@ -3,9 +3,11 @@ use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_egui::{egui, EguiContext, EguiPlugin, EguiSettings};
 use bevy_rapier3d::prelude::*;
 use egui::Response;
+use emath::Pos2;
 use std::{collections::HashSet, sync::Arc};
 
 use crate::db::assets;
+use crate::HEIGHT;
 
 #[derive(Default)]
 pub struct Images {
@@ -51,6 +53,7 @@ pub fn ui_example(
     mut rendered_texture_id: Local<egui::TextureId>,
     mut rendered_texture_id2: Local<egui::TextureId>,
     mut rendered_texture_id3: Local<egui::TextureId>,
+    mut rendered_texture_id4: Local<egui::TextureId>,
     mut is_initialized: Local<bool>,
     mut is_initialized2: Local<bool>,
     mut is_initialized3: Local<bool>,
@@ -63,15 +66,16 @@ pub fn ui_example(
     *rendered_texture_id = egui_ctx.add_image(asset_server.load(&images.img1[..]));
     *rendered_texture_id2 = egui_ctx.add_image(asset_server.load(&images.img2[..]));
     *rendered_texture_id3 = egui_ctx.add_image(asset_server.load(&images.img3[..]));
+    *rendered_texture_id4 = egui_ctx.add_image(asset_server.load("default_imgs/upload.png"));
 
     let mut response_bool = false;
-    egui::SidePanel::left("left_panel")
-        .default_width(200.0)
-        .show(&egui_ctx.ctx_mut().clone(), |ui| {
-            // Title
-            ui.allocate_space(egui::Vec2::new(1.0, 10.0));
-            ui.heading("World Creator");
 
+    egui::Window::new("World Creator")
+        .default_width(200.0)
+        .default_height(HEIGHT)
+        .default_pos(Pos2 { x: 0.0, y: 25.0 })
+        .vscroll(true)
+        .show(&egui_ctx.ctx_mut().clone(), |ui| {
             // Searchbar
             ui.allocate_space(egui::Vec2::new(1.0, 10.0));
             ui.horizontal(|ui| {
@@ -184,21 +188,22 @@ pub fn ui_example(
                         })
                         // Physics
                         .with_children(|children| {
-                            children.spawn_bundle(PbrBundle {
-                                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-                                material: materials.add(StandardMaterial {
-                                    base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
-                                    alpha_mode: AlphaMode::Mask(0.5),
-                                    ..default()
-                                }),
-                                transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                                ..Default::default()
-                            })
-                            .insert_bundle(bevy_mod_picking::PickableBundle::default())
-                            .insert(bevy_transform_gizmo::GizmoTransformable)
-                            .insert(RigidBody::Fixed)
-                            .insert(Collider::cuboid(0.25, 0.25, 0.25))
-                            .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+                            children
+                                .spawn_bundle(PbrBundle {
+                                    mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                                    material: materials.add(StandardMaterial {
+                                        base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                        alpha_mode: AlphaMode::Mask(0.5),
+                                        ..default()
+                                    }),
+                                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                    ..Default::default()
+                                })
+                                .insert_bundle(bevy_mod_picking::PickableBundle::default())
+                                .insert(bevy_transform_gizmo::GizmoTransformable)
+                                .insert(RigidBody::Fixed)
+                                .insert(Collider::cuboid(0.25, 0.25, 0.25))
+                                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
                         });
                 }
             }
@@ -275,20 +280,83 @@ pub fn ui_example(
                 }
             }
 
-            // Next Button
-            ui.allocate_space(egui::Vec2::new(1.0, 20.0));
+            // More Assets Button
             ui.horizontal(|ui| {
-                ui.button("Next").clicked();
+                ui.button("More Assets").clicked();
+                //    if ui.button("More Assets").clicked() {
+                //     println!("more assets")
+                //     }
+                //     ui.button("Upload Asset").clicked();
             });
             ui.allocate_space(egui::Vec2::new(1.0, 20.0));
 
-            //If you want your panel to be resizable you also need a widget in it that takes up more space as you resize it, such as:
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                ui.add(egui::Hyperlink::from_label_and_url(
-                    "Insight",
-                    "https://github.com/paxsethorld/Insight_World",
-                ));
+            ui.horizontal(|ui| {
+                commands
+                    .spawn()
+                    // add a component
+                    .insert(GltfDropTarget)
+                    .with_children(|children| {
+                        ui.add(egui::widgets::Image::new(
+                            *rendered_texture_id4,
+                            [128.0, 80.0],
+                        ));
+                    });
+                commands
+                    .spawn()
+                    // add a component
+                    .insert(ImgDropTarget)
+                    .with_children(|children| {
+                        ui.add(egui::widgets::Image::new(
+                            *rendered_texture_id4,
+                            [128.0, 80.0],
+                        ));
+                    });
             });
+
+            // // // Upload Assets
+            // commands
+            //     .spawn()
+            //     // add a component
+            //     .insert(GltfDropTarget)
+            //     .with_children(|children| {
+            //         ui.horizontal(|ui| {
+            //             ui.add(egui::widgets::Image::new(
+            //                 *rendered_texture_id4,
+            //                 [128.0, 80.0],
+            //             ));
+            //         });
+            //     });
+
+            // commands
+            //     .spawn()
+            //     // add a component
+            //     .insert(ImgDropTarget)
+            //     .with_children(|children| {
+            //         ui.horizontal(|ui| {
+            //             ui.add(egui::widgets::Image::new(
+            //                 *rendered_texture_id4,
+            //                 [128.0, 80.0],
+            //             ));
+            //         });
+            //     });
+
+            // ui.allocate_space(egui::Vec2::new(1.0, 20.0));
+            // ui.horizontal(|ui| {
+            //     let upload = ui.add(egui::widgets::Image::new(
+            //         *rendered_texture_id4,
+            //         [128.0, 80.0],
+            //     ));
+            //     let upload2 = ui.add(egui::widgets::Image::new(
+            //         *rendered_texture_id4,
+            //         [128.0, 80.0],
+            //     ));
+            // });
+            // if upload.hovered() {
+            //     println!("upload");
+            // }
+
+            ui.button("Upload Asset").clicked();
+            ui.allocate_space(egui::Vec2::new(1.0, 20.0));
         });
 
     // Abilities Builder
@@ -337,14 +405,33 @@ pub fn ui_example(
             });
         });
     });
+}
 
-    egui::Window::new("Window")
-        .vscroll(true)
-        .open(&mut ui_state.is_window_open)
-        .show(egui_ctx.ctx_mut(), |ui| {
-            ui.label("Windows can be moved by dragging them.");
-            ui.label("They are automatically sized based on contents.");
-            ui.label("You can turn on resizing and scrolling if you like.");
-            ui.label("You would normally chose either panels OR windows.");
-        });
+#[derive(Component)]
+struct GltfDropTarget;
+
+#[derive(Component)]
+struct ImgDropTarget;
+
+pub fn file_drop(
+    mut dnd_evr: EventReader<FileDragAndDrop>,
+    //query_ui_droptarget: Query<&Interaction, With<MyDropTarget>>,
+) {
+    for ev in dnd_evr.iter() {
+        println!("{:?}", ev);
+        if let FileDragAndDrop::DroppedFile { id, path_buf } = ev {
+            println!("Dropped file with path: {:?}", path_buf);
+
+            // if id.is_primary() {
+            //     // it was dropped over the main window
+            // }
+
+            // for interaction in query_ui_droptarget.iter() {
+            //     if *interaction == Interaction::Hovered {
+            //         // it was dropped over our UI element
+            //         // (our UI element is being hovered over)
+            //     }
+            // }
+        }
+    }
 }

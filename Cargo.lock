@@ -15,6 +15,7 @@ dependencies = [
  "bevy_rapier3d",
  "bevy_transform_gizmo",
  "bytemuck",
+ "emath",
  "ggrs",
  "glam",
  "instant",

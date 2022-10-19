@@ -13,6 +13,8 @@ mod save;
 mod db;
 use db::assets;
 
+pub const HEIGHT: f32 = 800.0;
+
 fn main() {
     let mut app = bevy::app::App::new(); //new vs empty //bevy::App has more trait implementations than bevy_app
     
@@ -26,8 +28,8 @@ fn main() {
         .insert_resource(Msaa { samples: 4 }) //remove jaggedness
         .insert_resource(WindowDescriptor { //must come before DefaultPlugins
             title: "InsightWorld Plane Creator".to_string(),
-            width: 1600.0,
-            height: 1000.0,
+            width: 1200.0,
+            height: HEIGHT,
             present_mode: PresentMode::Fifo,
             ..default()
         })
@@ -73,6 +75,7 @@ fn main() {
     //Systems
             //.add_system(size::scale_for_spawn)
         .add_system(bevy_ui::ui_example)
+        .add_system(bevy_ui::file_drop)
         //.add_system(model_to_world::sizer)
         .run();
 }
