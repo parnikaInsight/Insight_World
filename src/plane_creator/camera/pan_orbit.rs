@@ -43,7 +43,7 @@ pub fn pan_orbit_camera(
 
     if keys.pressed(KeyCode::Space){
         if input_mouse.pressed(orbit_button) {
-            //println!("space and orbit pressed");
+            println!("space and orbit pressed");
             for ev in ev_motion.iter() {
                 rotation_move += ev.delta;
             }

@@ -1,11 +1,14 @@
 use bevy::{asset::AssetServerSettings, prelude::*, window::PresentMode, winit::WinitSettings, render::primitives::Aabb};
 use bevy_egui::{egui, EguiContext, EguiPlugin};
+use bevy_rapier3d::prelude::*;
+use bevy_dolly::prelude::*;
+
 //use bevy::render::primitives::Aabb;
 
 mod geometry;
-use geometry::{my_plane, bevy_ui, size};
+use geometry::{my_plane, bevy_ui, size, model_to_world};
 mod camera;
-use camera::pan_orbit;
+use camera::{pan_orbit, dolly};
 mod save;
 mod db;
 use db::assets;
@@ -19,7 +22,7 @@ fn main() {
     //Resources
     app
         //Window: event loops, changing contexts
-        .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.4)))
+        //.insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.4)))
         .insert_resource(Msaa { samples: 4 }) //remove jaggedness
         .insert_resource(WindowDescriptor { //must come before DefaultPlugins
             title: "InsightWorld Plane Creator".to_string(),
@@ -49,23 +52,28 @@ fn main() {
     //Plugins
         .add_plugins(DefaultPlugins) //disable log and winit plugin when put into subapp 
         .add_plugins(bevy_mod_picking::DefaultPickingPlugins)
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(EguiPlugin)
+        .add_plugin(DollyCursorGrab)
         .add_plugin(bevy_transform_gizmo::TransformGizmoPlugin::default()) // Use TransformGizmoPlugin::default() to align to the scene's coordinate system.
+
+
+    // Camera
+        .add_startup_system(dolly::setup_camera)
+        .add_system(dolly::update_camera)
 
     //Startup Systems
        // .add_system(mouse_events::print_mouse_events_system)
         .add_startup_system(my_plane::setup_plane)
-        .add_startup_system(pan_orbit::spawn_camera)
         .add_startup_system(assets::default_assets)
         .add_startup_system(bevy_ui::configure_visuals)
         .add_startup_system(bevy_ui::configure_ui_state)
 
     //Systems
-        .add_system(pan_orbit::pan_orbit_camera)
-        .add_system(size::detect_collisions)
-        // .add_system(size::sizer2)
-        //.add_system(save::save::save_scene)
+            //.add_system(size::scale_for_spawn)
         .add_system(bevy_ui::ui_example)
+        //.add_system(model_to_world::sizer)
         .run();
 }
 

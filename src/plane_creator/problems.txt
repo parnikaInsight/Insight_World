@@ -1,2 +1,7 @@
 - search results change w/ spaces in searchbar (ball locs keep switching prob bc &str)
 - repeat search results (soccer ball shown twice)
+
+Image 1 of the plane creator spawns a physics collider with the emu. You can drag and scale the 
+collider to fit the emu. Then, when you move the emu, the collider moves with it. 
+Problem: Once you've moved the emu, changing the collider will be weird. The collider's position 
+will keep hopping.

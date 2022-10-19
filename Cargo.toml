@@ -13,7 +13,7 @@ rand = "0.8.5"
 noise = "0.8.0"
 glam = "0.21.2"
 bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "trial#2"}  #updated for bevy 0.8
-bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d"}
+bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d", features = ["debug-render"]}
 bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "trial#2"} #updated for bevy 0.8
 #bevy_mod_picking = {path = "src/crates/bevy_mod_picking"} #updated for bevy 0.8
 bevy_transform_gizmo = {git = "https://github.com/paxsethorld/bevy_transform_gizmo.git", branch = "0.8"}

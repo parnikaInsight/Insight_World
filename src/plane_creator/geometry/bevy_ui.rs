@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_egui::{egui, EguiContext, EguiPlugin, EguiSettings};
+use bevy_rapier3d::prelude::*;
 use egui::Response;
 use std::{collections::HashSet, sync::Arc};
 
@@ -135,10 +136,20 @@ pub fn ui_example(
                 [256.0, 256.0],
             ));
 
+            if response1.clicked() {
+                println!("clicked 1 on");
+            }
+            if response2.clicked() {
+                println!("clicked 2 on");
+            }
+            if response3.clicked() {
+                println!("clicked 3 on");
+            }
+
             // Spawn asset shown in image
             if response1.hovered() && !*is_initialized {
                 *is_initialized = true;
-                println!("1 DOUBLE CLICKED");
+                println!("1 hovered");
                 if let Some(index) = images.img1.find(".") {
                     let name = images.img1[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
@@ -163,19 +174,37 @@ pub fn ui_example(
                         .with_children(|children| {
                             children.spawn_bundle(SceneBundle {
                                 transform: Transform {
-                                    translation: Vec3::new(0.0, 0.0, 0.0),
+                                    translation: Vec3::new(0.0, 0.0, 0.0), //moves relative to cube pos
                                     scale: Vec3::new(0.5, 0.5, 0.5),
                                     ..default()
                                 },
                                 scene: player_handle.clone(),
                                 ..default()
                             });
+                        })
+                        // Physics
+                        .with_children(|children| {
+                            children.spawn_bundle(PbrBundle {
+                                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                                material: materials.add(StandardMaterial {
+                                    base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                    alpha_mode: AlphaMode::Mask(0.5),
+                                    ..default()
+                                }),
+                                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                ..Default::default()
+                            })
+                            .insert_bundle(bevy_mod_picking::PickableBundle::default())
+                            .insert(bevy_transform_gizmo::GizmoTransformable)
+                            .insert(RigidBody::Fixed)
+                            .insert(Collider::cuboid(0.25, 0.25, 0.25))
+                            .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
                         });
                 }
             }
             if response2.hovered() && !*is_initialized2 {
                 *is_initialized2 = true;
-                println!("2 DOUBLE CLICKED");
+                println!("2 hovered");
                 if let Some(index) = images.img2.find(".") {
                     let name = images.img2[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
@@ -211,7 +240,7 @@ pub fn ui_example(
             }
             if response3.hovered() && !*is_initialized3 {
                 *is_initialized3 = true;
-                println!("3 DOUBLE CLICKED");
+                println!("3 hovered");
                 if let Some(index) = images.img3.find(".") {
                     let name = images.img3[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
