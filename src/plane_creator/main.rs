@@ -78,6 +78,7 @@ fn main() {
         .add_system(bevy_ui::ui_example)
         .add_system(bevy_ui::file_drop)
         .add_system(save_world::save_scene)
+        .add_system(save_world::recreate_scene)
         //.add_system(model_to_world::sizer)
         .run();
 }

@@ -32,7 +32,6 @@ serde-big-array = "0.4.1"
 rocksdb = "0.19.0"
 emath = "0.19.0"
 
-
 [profile.dev.package."*"]
 opt-level = 3
 
