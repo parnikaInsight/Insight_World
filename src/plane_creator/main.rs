@@ -10,6 +10,7 @@ use geometry::{my_plane, bevy_ui, size, model_to_world};
 mod camera;
 use camera::{pan_orbit, dolly};
 mod save;
+use save::save_world;
 mod db;
 use db::assets;
 
@@ -76,6 +77,7 @@ fn main() {
             //.add_system(size::scale_for_spawn)
         .add_system(bevy_ui::ui_example)
         .add_system(bevy_ui::file_drop)
+        .add_system(save_world::save_scene)
         //.add_system(model_to_world::sizer)
         .run();
 }

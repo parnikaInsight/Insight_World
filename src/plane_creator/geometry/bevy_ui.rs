@@ -32,6 +32,14 @@ pub struct UiState {
     is_window_open: bool,
 }
 
+#[derive(Component)]
+pub struct CollidableEntity {
+    pub assetID: String,
+}
+
+#[derive(Component)]
+pub struct MyCollider;
+
 pub fn configure_visuals(mut egui_ctx: ResMut<EguiContext>) {
     egui_ctx.ctx_mut().set_visuals(egui::Visuals {
         window_rounding: 0.0.into(),
@@ -76,7 +84,7 @@ pub fn ui_example(
 
     egui::Window::new("World Creator")
         .default_width(200.0)
-        .default_height(HEIGHT)
+        .default_height(HEIGHT - 60.0)
         .default_pos(Pos2 { x: 0.0, y: 25.0 })
         .vscroll(true)
         .show(&egui_ctx.ctx_mut().clone(), |ui| {
@@ -177,6 +185,7 @@ pub fn ui_example(
                             transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
+                        .insert(CollidableEntity {assetID: name})
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
                         .insert(bevy_transform_gizmo::GizmoTransformable)
                         .with_children(|children| {
@@ -203,6 +212,7 @@ pub fn ui_example(
                                     transform: Transform::from_xyz(0.0, 0.0, 0.0),
                                     ..Default::default()
                                 })
+                                .insert(MyCollider)
                                 .insert_bundle(bevy_mod_picking::PickableBundle::default())
                                 .insert(bevy_transform_gizmo::GizmoTransformable)
                                 .insert(RigidBody::Fixed)
@@ -232,6 +242,7 @@ pub fn ui_example(
                             transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
+                        .insert(CollidableEntity {assetID: name})
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
                         .insert(bevy_transform_gizmo::GizmoTransformable)
                         .with_children(|children| {
@@ -244,6 +255,26 @@ pub fn ui_example(
                                 scene: player_handle.clone(),
                                 ..default()
                             });
+                        })
+                        // Physics
+                        .with_children(|children| {
+                            children
+                                .spawn_bundle(PbrBundle {
+                                    mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                                    material: materials.add(StandardMaterial {
+                                        base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                        alpha_mode: AlphaMode::Mask(0.5),
+                                        ..default()
+                                    }),
+                                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                    ..Default::default()
+                                })
+                                .insert(MyCollider)
+                                .insert_bundle(bevy_mod_picking::PickableBundle::default())
+                                .insert(bevy_transform_gizmo::GizmoTransformable)
+                                .insert(RigidBody::Fixed)
+                                .insert(Collider::cuboid(0.25, 0.25, 0.25))
+                                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
                         });
                 }
             }
@@ -268,6 +299,7 @@ pub fn ui_example(
                             transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
+                        .insert(CollidableEntity {assetID: name})
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
                         .insert(bevy_transform_gizmo::GizmoTransformable)
                         .with_children(|children| {
@@ -280,6 +312,26 @@ pub fn ui_example(
                                 scene: player_handle.clone(),
                                 ..default()
                             });
+                        })
+                        // Physics
+                        .with_children(|children| {
+                            children
+                                .spawn_bundle(PbrBundle {
+                                    mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                                    material: materials.add(StandardMaterial {
+                                        base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                        alpha_mode: AlphaMode::Mask(0.5),
+                                        ..default()
+                                    }),
+                                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                    ..Default::default()
+                                })
+                                .insert(MyCollider)
+                                .insert_bundle(bevy_mod_picking::PickableBundle::default())
+                                .insert(bevy_transform_gizmo::GizmoTransformable)
+                                .insert(RigidBody::Fixed)
+                                .insert(Collider::cuboid(0.25, 0.25, 0.25))
+                                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
                         });
                 }
             }
@@ -367,6 +419,9 @@ pub fn ui_example(
         // The top panel is often a good place for a menu bar:
         egui::menu::bar(ui, |ui| {
             egui::menu::menu_button(ui, "File", |ui| {
+                if ui.button("Save").clicked() {
+                    std::process::exit(0);
+                }
                 if ui.button("Quit").clicked() {
                     std::process::exit(0);
                 }
