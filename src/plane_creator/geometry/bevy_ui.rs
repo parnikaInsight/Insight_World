@@ -4,6 +4,10 @@ use bevy_egui::{egui, EguiContext, EguiPlugin, EguiSettings};
 use bevy_rapier3d::prelude::*;
 use egui::Response;
 use emath::Pos2;
+use std::error::Error;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 use std::{collections::HashSet, sync::Arc};
 
 use crate::db::assets;
@@ -290,72 +294,36 @@ pub fn ui_example(
             });
             ui.allocate_space(egui::Vec2::new(1.0, 20.0));
 
-            ui.horizontal(|ui| {
-                commands
-                    .spawn()
-                    // add a component
-                    .insert(GltfDropTarget)
-                    .with_children(|children| {
-                        ui.add(egui::widgets::Image::new(
-                            *rendered_texture_id4,
-                            [128.0, 80.0],
-                        ));
-                    });
-                commands
-                    .spawn()
-                    // add a component
-                    .insert(ImgDropTarget)
-                    .with_children(|children| {
-                        ui.add(egui::widgets::Image::new(
-                            *rendered_texture_id4,
-                            [128.0, 80.0],
-                        ));
-                    });
-            });
-
-            // // // Upload Assets
-            // commands
-            //     .spawn()
-            //     // add a component
-            //     .insert(GltfDropTarget)
-            //     .with_children(|children| {
-            //         ui.horizontal(|ui| {
-            //             ui.add(egui::widgets::Image::new(
-            //                 *rendered_texture_id4,
-            //                 [128.0, 80.0],
-            //             ));
-            //         });
-            //     });
-
-            // commands
-            //     .spawn()
-            //     // add a component
-            //     .insert(ImgDropTarget)
-            //     .with_children(|children| {
-            //         ui.horizontal(|ui| {
-            //             ui.add(egui::widgets::Image::new(
-            //                 *rendered_texture_id4,
-            //                 [128.0, 80.0],
-            //             ));
-            //         });
-            //     });
-
-            // ui.allocate_space(egui::Vec2::new(1.0, 20.0));
             // ui.horizontal(|ui| {
-            //     let upload = ui.add(egui::widgets::Image::new(
-            //         *rendered_texture_id4,
-            //         [128.0, 80.0],
-            //     ));
-            //     let upload2 = ui.add(egui::widgets::Image::new(
-            //         *rendered_texture_id4,
-            //         [128.0, 80.0],
-            //     ));
+            //     commands
+            //         //.spawn
+            //         .spawn()
+            //         // add a component
+            //         .insert(GltfDropTarget)
+            //         .with_children(|children| {
+            //             ui.add(egui::widgets::Image::new(
+            //                 *rendered_texture_id4,
+            //                 [128.0, 80.0],
+            //             ));
+            //         });
+            //     commands
+            //         .spawn()
+            //         // add a component
+            //         .insert(ImgDropTarget)
+            //         .with_children(|children| {
+            //             ui.add(egui::widgets::Image::new(
+            //                 *rendered_texture_id4,
+            //                 [128.0, 80.0],
+            //             ));
+            //         });
             // });
-            // if upload.hovered() {
-            //     println!("upload");
-            // }
 
-            ui.button("Upload Asset").clicked();
+            ui.heading("Update Asset Tags");
+            ui.label("Filename: ");
+            let name_response = ui.text_edit_singleline(&mut ui_state.label);
+            ui.label("Tags: ");
+            let tag_response = ui.text_edit_singleline(&mut ui_state.label);
+            let upload_button = ui.button("Update").clicked();
             ui.allocate_space(egui::Vec2::new(1.0, 20.0));
         });
 
@@ -408,30 +376,53 @@ pub fn ui_example(
 }
 
 #[derive(Component)]
-struct GltfDropTarget;
+pub struct GltfDropTarget;
 
 #[derive(Component)]
-struct ImgDropTarget;
+pub struct ImgDropTarget;
 
-pub fn file_drop(
-    mut dnd_evr: EventReader<FileDragAndDrop>,
-    //query_ui_droptarget: Query<&Interaction, With<MyDropTarget>>,
-) {
+pub fn file_drop(mut dnd_evr: EventReader<FileDragAndDrop>) {
     for ev in dnd_evr.iter() {
         println!("{:?}", ev);
         if let FileDragAndDrop::DroppedFile { id, path_buf } = ev {
-            println!("Dropped file with path: {:?}", path_buf);
+            //println!("Dropped file with path: {:?}", path_buf);
+            // it was dropped over the main window
+            if id.is_primary() {
+                let old_path = path_buf.as_path();
+                if let Some(old_path_as_str) = old_path.to_str() {
+                    let mut split: Vec<&str> = old_path_as_str.split(".").collect();
+                    if let Some(extension) = split.pop() {
+                        let mut v: Vec<&str> = old_path_as_str.split(&format!("{}{}", ".", "extension")[..]).collect();
+                        if let Some(rest) = v.pop(){
+                            let mut split2: Vec<&str> = rest.split("/").collect();
+                            if let Some(name) = split2.pop() {
+                                let mut new_path = String::new();
+                                if extension == "glb"{
+                                    new_path = format!("{}{}", "./assets/default_gltfs/", name);
+                                }
+                                if extension == "png" || extension == "jpg" || extension == "jpeg" {
+                                    new_path = format!("{}{}", "./assets/default_imgs/", name);
+                                }
+                                // println!("name {}", name); //currently name = whale.jpg
+                                let mut file = File::create(new_path.clone()).unwrap();
+                                let res = std::fs::copy(old_path, new_path);
+                            }
+                        }
+                    }
+                }
 
-            // if id.is_primary() {
-            //     // it was dropped over the main window
-            // }
+                // create file based on path_buf extension
+                // copy file contents and paste into new file
 
-            // for interaction in query_ui_droptarget.iter() {
-            //     if *interaction == Interaction::Hovered {
-            //         // it was dropped over our UI element
-            //         // (our UI element is being hovered over)
-            //     }
-            // }
+                // copy asset from path_buf to assets based on file extension
+                // load asset from assets
+                // update right panel search first pic with new asset if it has a matching png
+                // if no image, search first pic with blank square with filename
+                // if illegal file extension, print error
+            }
         }
     }
+    // let path = Path::new("./assets/default_imgs/whale.jpg");
+    // let mut file = File::create(path).unwrap();
+    // let res = std::fs::copy("/Users/parnikasaxena/Downloads/whale.jpg", path);
 }
