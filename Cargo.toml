@@ -40,9 +40,5 @@ opt-level = 3
 opt-level = 1
 
 [[bin]]
-name = "systems_creator"
-path = "src/systems_creator/main.rs"
-
-[[bin]]
 name = "plane_creator"
 path = "src/plane_creator/main.rs"

@@ -38,11 +38,11 @@ pub fn recreate_scene(mut commands: Commands) {
     let file = File::open("./assets/worlds/experiment_world.txt").unwrap();
     let reader = BufReader::new(file);
     let my_world_res: Result<WorldDataStructures, serde_json::Error> = serde_json::from_reader(reader);   
-    println!("JSON World: {:?}", my_world_res);
+    //println!("JSON World: {:?}", my_world_res);
     
     match my_world_res {
-        Ok(world) => println!("good"), // spawn these assets in game world
-        Err(e) => println!("bad from plane_creator::save::save_world::recreate_scene:"),
+        Ok(world) => (), //println!("good"), // spawn these assets in game world
+        Err(e) => (), // println!("bad from plane_creator::save::save_world::recreate_scene:"),
     }
 }
 

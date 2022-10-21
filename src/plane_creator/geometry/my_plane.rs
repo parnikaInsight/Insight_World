@@ -23,6 +23,18 @@ pub fn setup_plane(
         .insert(Collider::cuboid(1.75, 0.000000001, 1.75))
         .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
 
+     // // Heaven sky orb
+     let player_handle2: Handle<Scene> = asset_server.load("nature/heaven/scene.gltf#Scene0");
+     commands.spawn_bundle(SceneBundle {
+         transform: Transform {
+             translation: Vec3::new(0.0, 0.0, 0.0),
+             scale: Vec3::new(100.0, 100.0, 100.0),
+             ..default()
+         },
+         scene: player_handle2.clone(),
+         ..default()
+     });
+
     // .insert_bundle(bevy_mod_picking::PickableBundle::default())
     // .insert(bevy_transform_gizmo::GizmoTransformable);
     //db_worlds::put("plane".to_string(), db_worlds::transform_to_string(Transform::default()));

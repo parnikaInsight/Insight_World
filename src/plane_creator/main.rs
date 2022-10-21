@@ -14,6 +14,7 @@ use save::save_world;
 mod db;
 use db::assets;
 
+pub const WIDTH: f32 = 1200.0;
 pub const HEIGHT: f32 = 800.0;
 
 fn main() {
@@ -29,7 +30,7 @@ fn main() {
         .insert_resource(Msaa { samples: 4 }) //remove jaggedness
         .insert_resource(WindowDescriptor { //must come before DefaultPlugins
             title: "InsightWorld Plane Creator".to_string(),
-            width: 1200.0,
+            width: WIDTH,
             height: HEIGHT,
             present_mode: PresentMode::Fifo,
             ..default()
@@ -45,7 +46,8 @@ fn main() {
         .insert_resource(bevy_ui::Images {
             img1: "default_imgs/emu.png".to_owned(), 
             img2: "default_imgs/tiger.png".to_owned(), 
-            img3: "default_imgs/soccer_ball.png".to_owned()
+            img3: "default_imgs/eve.png".to_owned(),
+            img4: "default_imgs/fireball.png".to_owned(),
 })
         .init_resource::<bevy_ui::UiState>()
         //.init_resource::<bevy_ui::Images>()

@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::geometry::bevy_ui;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct PlaneAssets {
     // Asset filename : Tags
     pub assets: HashMap<String, HashSet<String>>,
@@ -61,8 +61,11 @@ pub fn default_assets(mut commands: Commands) {
 }
 
 pub fn get_assets(
-    plane_assets: ResMut<PlaneAssets>,
-    search_tags: ResMut<bevy_ui::Tags>,
+   // plane_assets: ResMut<PlaneAssets>,
+   // search_tags: ResMut<bevy_ui::Tags>,
+    plane_assets: PlaneAssets,
+    search_tags: bevy_ui::Tags,
+
 ) -> HashSet<String> {
     let mut tagged_assets: HashSet<String> = HashSet::new();
     for (filename, asset_tags) in plane_assets.assets.iter() {

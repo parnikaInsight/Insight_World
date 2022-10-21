@@ -11,24 +11,30 @@ use std::path::Path;
 use std::{collections::HashSet, sync::Arc};
 
 use crate::db::assets;
-use crate::HEIGHT;
+use crate::{HEIGHT, WIDTH};
 
 #[derive(Default)]
 pub struct Images {
     pub img1: String,
     pub img2: String,
     pub img3: String,
+    pub img4: String,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Tags {
     pub tags: HashSet<String>,
 }
 
 #[derive(Default)]
 pub struct UiState {
-    label: String,
-    value: f32,
+    img_search_label: String,
+    character_search_label: String,
+    projectile_search_label: String,
+    collider_value: f32,
+    velocity_value: f32,
+    damage_value: f32,
+    cooldown_value: f32,
     is_window_open: bool,
 }
 
@@ -57,7 +63,7 @@ pub fn ui_example(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut egui_ctx: ResMut<EguiContext>,
     mut ui_state: ResMut<UiState>,
-    mut tags: ResMut<Tags>,
+    mut search_tags: ResMut<Tags>,
     plane_assets: ResMut<assets::PlaneAssets>,
     // You are not required to store Egui texture ids in systems. We store this one here just to
     // demonstrate that rendering by using a texture id of a removed image is handled without
@@ -65,10 +71,10 @@ pub fn ui_example(
     mut rendered_texture_id: Local<egui::TextureId>,
     mut rendered_texture_id2: Local<egui::TextureId>,
     mut rendered_texture_id3: Local<egui::TextureId>,
-    mut rendered_texture_id4: Local<egui::TextureId>,
+    mut rendered_texture_id4: Local<egui::TextureId>, // Cannot do more than 4
     mut is_initialized: Local<bool>,
     mut is_initialized2: Local<bool>,
-    mut is_initialized3: Local<bool>,
+    mut is_initialized3: Local<bool>, // Cannot do more than 3
     // If you need to access the ids from multiple systems, you can also initialize the `Images`
     // resource while building the app and use `Res<Images>` instead.
     mut images: ResMut<Images>,
@@ -77,8 +83,12 @@ pub fn ui_example(
     // World Builder
     *rendered_texture_id = egui_ctx.add_image(asset_server.load(&images.img1[..]));
     *rendered_texture_id2 = egui_ctx.add_image(asset_server.load(&images.img2[..]));
+    //*rendered_texture_id3 = egui_ctx.add_image(asset_server.load(&images.img3[..]));
+    //*rendered_texture_id4 = egui_ctx.add_image(asset_server.load("default_imgs/upload.png"));
     *rendered_texture_id3 = egui_ctx.add_image(asset_server.load(&images.img3[..]));
-    *rendered_texture_id4 = egui_ctx.add_image(asset_server.load("default_imgs/upload.png"));
+    //*rendered_texture_id3 = egui_ctx.add_image(asset_server.load("default_imgs/eve.png"));
+    //*rendered_texture_id4 = egui_ctx.add_image(asset_server.load("default_imgs/fireball.png"));
+    *rendered_texture_id4 = egui_ctx.add_image(asset_server.load(&images.img4[..]));
 
     let mut response_bool = false;
 
@@ -92,7 +102,7 @@ pub fn ui_example(
             ui.allocate_space(egui::Vec2::new(1.0, 10.0));
             ui.horizontal(|ui| {
                 ui.label("Searchbar: ");
-                let response = ui.text_edit_singleline(&mut ui_state.label);
+                let response = ui.text_edit_singleline(&mut ui_state.img_search_label);
                 if response.changed() {
                     response_bool = true;
                 }
@@ -100,18 +110,18 @@ pub fn ui_example(
 
             // Get search tags
             if response_bool {
-                let search = ui_state.label.clone();
+                let search = ui_state.img_search_label.clone();
                 let v: Vec<&str> = search.split(' ').collect();
                 println!("PARNIKA {} done {:?}", search, v);
                 let mut new_tags: HashSet<String> = HashSet::new();
                 for i in v.iter() {
                     new_tags.insert(i.to_string());
                 }
-                tags.tags = new_tags;
-                println!("Saxena {} done {:?}", search, tags.tags);
+                search_tags.tags = new_tags;
+                println!("Saxena {} done {:?}", search, search_tags.tags);
 
                 // Update images with searches
-                let searched_assets = assets::get_assets(plane_assets, tags);
+                let searched_assets = assets::get_assets(plane_assets.clone(), search_tags.clone());
                 if !searched_assets.is_empty() {
                     let mut count = 0;
                     for a in searched_assets {
@@ -119,11 +129,14 @@ pub fn ui_example(
                         println!("String {} {}", a, s);
                         if count == 0 {
                             images.img1 = s;
-                        } else if count == 1 {
+                        } 
+                        else if count == 1 {
                             images.img2 = s;
-                        } else if count == 2 {
-                            images.img3 = s;
-                        } else {
+                        } 
+                        // else if count == 2 {
+                        //     images.img3 = s;
+                        // }
+                         else {
                             break;
                         }
                         count += 1;
@@ -132,7 +145,7 @@ pub fn ui_example(
             }
 
             // First Image
-            ui.allocate_space(egui::Vec2::new(1.0, 20.0));
+            //ui.allocate_space(egui::Vec2::new(1.0, 20.0));
             let response1 = ui.add(egui::widgets::Image::new(
                 *rendered_texture_id,
                 [256.0, 256.0],
@@ -145,12 +158,12 @@ pub fn ui_example(
                 [256.0, 256.0],
             ));
 
-            // Third Image
-            ui.allocate_space(egui::Vec2::new(1.0, 20.0));
-            let response3 = ui.add(egui::widgets::Image::new(
-                *rendered_texture_id3,
-                [256.0, 256.0],
-            ));
+            // // Third Image
+            // ui.allocate_space(egui::Vec2::new(1.0, 20.0));
+            // let response3 = ui.add(egui::widgets::Image::new(
+            //     *rendered_texture_id4,
+            //     [256.0, 256.0],
+            // ));
 
             if response1.clicked() {
                 println!("clicked 1 on");
@@ -158,9 +171,9 @@ pub fn ui_example(
             if response2.clicked() {
                 println!("clicked 2 on");
             }
-            if response3.clicked() {
-                println!("clicked 3 on");
-            }
+            // if response3.clicked() {
+            //     println!("clicked 3 on");
+            // }
 
             // Spawn asset shown in image
             if response1.hovered() && !*is_initialized {
@@ -278,63 +291,63 @@ pub fn ui_example(
                         });
                 }
             }
-            if response3.hovered() && !*is_initialized3 {
-                *is_initialized3 = true;
-                println!("3 hovered");
-                if let Some(index) = images.img3.find(".") {
-                    let name = images.img3[13..index].to_owned();
-                    let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
-                    let player_handle: Handle<Scene> = asset_server.load(&path[..]);
-                    commands
-                        .spawn_bundle(PbrBundle {
-                            // visibility: Visibility {
-                            //     is_visible: false,
-                            // },
-                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-                            material: materials.add(StandardMaterial {
-                                base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
-                                alpha_mode: AlphaMode::Mask(0.5),
-                                ..default()
-                            }),
-                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                            ..Default::default()
-                        })
-                        .insert(CollidableEntity {assetID: name})
-                        .insert_bundle(bevy_mod_picking::PickableBundle::default())
-                        .insert(bevy_transform_gizmo::GizmoTransformable)
-                        .with_children(|children| {
-                            children.spawn_bundle(SceneBundle {
-                                transform: Transform {
-                                    translation: Vec3::new(0.0, 0.0, 0.0),
-                                    scale: Vec3::new(0.5, 0.5, 0.5),
-                                    ..default()
-                                },
-                                scene: player_handle.clone(),
-                                ..default()
-                            });
-                        })
-                        // Physics
-                        .with_children(|children| {
-                            children
-                                .spawn_bundle(PbrBundle {
-                                    mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-                                    material: materials.add(StandardMaterial {
-                                        base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
-                                        alpha_mode: AlphaMode::Mask(0.5),
-                                        ..default()
-                                    }),
-                                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                                    ..Default::default()
-                                })
-                                .insert(MyCollider)
-                                .insert_bundle(bevy_mod_picking::PickableBundle::default())
-                                .insert(bevy_transform_gizmo::GizmoTransformable)
-                                .insert(RigidBody::Fixed)
-                                .insert(Collider::cuboid(0.25, 0.25, 0.25))
-                                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
-                        });
-                }
-            }
+            // if response3.hovered() && !*is_initialized3 {
+            //     *is_initialized3 = true;
+            //     println!("3 hovered");
+            //     if let Some(index) = images.img3.find(".") {
+            //         let name = images.img3[13..index].to_owned();
+            //         let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
+            //         let player_handle: Handle<Scene> = asset_server.load(&path[..]);
+            //         commands
+            //             .spawn_bundle(PbrBundle {
+            //                 // visibility: Visibility {
+            //                 //     is_visible: false,
+            //                 // },
+            //                 mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+            //                 material: materials.add(StandardMaterial {
+            //                     base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+            //                     alpha_mode: AlphaMode::Mask(0.5),
+            //                     ..default()
+            //                 }),
+            //                 transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            //                 ..Default::default()
+            //             })
+            //             .insert(CollidableEntity {assetID: name})
+            //             .insert_bundle(bevy_mod_picking::PickableBundle::default())
+            //             .insert(bevy_transform_gizmo::GizmoTransformable)
+            //             .with_children(|children| {
+            //                 children.spawn_bundle(SceneBundle {
+            //                     transform: Transform {
+            //                         translation: Vec3::new(0.0, 0.0, 0.0),
+            //                         scale: Vec3::new(0.5, 0.5, 0.5),
+            //                         ..default()
+            //                     },
+            //                     scene: player_handle.clone(),
+            //                     ..default()
+            //                 });
+            //             })
+            //             // Physics
+            //             .with_children(|children| {
+            //                 children
+            //                     .spawn_bundle(PbrBundle {
+            //                         mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+            //                         material: materials.add(StandardMaterial {
+            //                             base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+            //                             alpha_mode: AlphaMode::Mask(0.5),
+            //                             ..default()
+            //                         }),
+            //                         transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            //                         ..Default::default()
+            //                     })
+            //                     .insert(MyCollider)
+            //                     .insert_bundle(bevy_mod_picking::PickableBundle::default())
+            //                     .insert(bevy_transform_gizmo::GizmoTransformable)
+            //                     .insert(RigidBody::Fixed)
+            //                     .insert(Collider::cuboid(0.25, 0.25, 0.25))
+            //                     .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+            //             });
+            //     }
+            // }
 
             // More Assets Button
             ui.horizontal(|ui| {
@@ -372,39 +385,143 @@ pub fn ui_example(
 
             ui.heading("Update Asset Tags");
             ui.label("Filename: ");
-            let name_response = ui.text_edit_singleline(&mut ui_state.label);
+            let name_response = ui.text_edit_singleline(&mut ui_state.img_search_label);
             ui.label("Tags: ");
-            let tag_response = ui.text_edit_singleline(&mut ui_state.label);
+            let tag_response = ui.text_edit_singleline(&mut ui_state.img_search_label);
             let upload_button = ui.button("Update").clicked();
             ui.allocate_space(egui::Vec2::new(1.0, 20.0));
         });
 
+    let mut response_bool2 = false;
     // Abilities Builder
-    egui::SidePanel::right("right_panel")
+    egui::Window::new("Abilities Creator")
         .default_width(200.0)
-        .show(egui_ctx.ctx_mut(), |ui| {
-            ui.allocate_space(egui::Vec2::new(1.0, 10.0));
-            ui.heading("Abilities");
-
+        .default_height(HEIGHT - 60.0)
+        .default_pos(Pos2 { x: WIDTH - 270.0, y: 25.0 })
+        .vscroll(true)
+        .show(&egui_ctx.ctx_mut().clone(), |ui| {
             ui.allocate_space(egui::Vec2::new(1.0, 10.0));
             ui.horizontal(|ui| {
-                ui.label("Searchbar: ");
-                ui.text_edit_singleline(&mut ui_state.label);
+                ui.label("Characters: ");
+                let res = ui.text_edit_singleline(&mut ui_state.character_search_label);
+                if res.changed() {
+                    response_bool2 = true;
+                }
             });
 
-            ui.add(egui::Slider::new(&mut ui_state.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                ui_state.value += 1.0;
+            // Get search tags
+            if response_bool2 {
+                let search = ui_state.character_search_label.clone();
+                let v: Vec<&str> = search.split(' ').collect();
+                println!("PARNIKA {} done {:?}", search, v);
+                let mut new_tags: HashSet<String> = HashSet::new();
+                for i in v.iter() {
+                    new_tags.insert(i.to_string());
+                }
+                search_tags.tags = new_tags;
+                println!("Saxena {} done {:?}", search, search_tags.tags);
+
+                // Update images with searches
+                let searched_assets = assets::get_assets(plane_assets.clone(), search_tags.clone());
+                if !searched_assets.is_empty() {
+                    for a in searched_assets {
+                        let s = format!("{}{}{}", "default_imgs/".to_owned(), a, ".png");
+                        println!("String {} {}", a, s);
+                        images.img3 = s;
+                    }
+                }
             }
 
-            ui.allocate_space(egui::Vec2::new(1.0, 100.0));
+            let character_img = ui.add(egui::widgets::Image::new(
+                *rendered_texture_id3,
+                [256.0, 256.0],
+            ));
+
+            // Spawn asset shown in image
+            if character_img.hovered() && !*is_initialized3 {
+                *is_initialized3 = true;
+                println!("3 hovered");
+                if let Some(index) = images.img3.find(".") {
+                    let name = images.img3[13..index].to_owned();
+                    let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
+                    let player_handle: Handle<Scene> = asset_server.load(&path[..]);
+
+                    commands
+                        .spawn_bundle(PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                            material: materials.add(StandardMaterial {
+                                base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                alpha_mode: AlphaMode::Mask(0.5),
+                                ..default()
+                            }),
+                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                            ..Default::default()
+                        })
+                        .insert(CollidableEntity {assetID: name})
+                        .insert_bundle(bevy_mod_picking::PickableBundle::default())
+                        .insert(bevy_transform_gizmo::GizmoTransformable)
+                        .with_children(|children| {
+                            children.spawn_bundle(SceneBundle {
+                                transform: Transform {
+                                    translation: Vec3::new(0.0, 0.0, 0.0), //moves relative to cube pos
+                                    scale: Vec3::new(0.5, 0.5, 0.5),
+                                    ..default()
+                                },
+                                scene: player_handle.clone(),
+                                ..default()
+                            });
+                        })
+                        // Physics
+                        .with_children(|children| {
+                            children
+                                .spawn_bundle(PbrBundle {
+                                    mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+                                    material: materials.add(StandardMaterial {
+                                        base_color: Color::rgba(0.2, 0.7, 0.1, 0.0),
+                                        alpha_mode: AlphaMode::Mask(0.5),
+                                        ..default()
+                                    }),
+                                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                                    ..Default::default()
+                                })
+                                .insert(MyCollider)
+                                .insert_bundle(bevy_mod_picking::PickableBundle::default())
+                                .insert(bevy_transform_gizmo::GizmoTransformable)
+                                .insert(RigidBody::Fixed)
+                                .insert(Collider::cuboid(0.25, 0.25, 0.25))
+                                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+                        });
+                }
+            }
+
+            ui.horizontal(|ui| {
+                ui.label("Projectile: ");
+                ui.text_edit_singleline(&mut ui_state.projectile_search_label);
+            });
             ui.add(egui::widgets::Image::new(
-                *rendered_texture_id,
+                *rendered_texture_id4,
                 [256.0, 256.0],
             ));
 
             ui.allocate_space(egui::Vec2::new(1.0, 10.0));
-            ui.checkbox(&mut ui_state.is_window_open, "Window Is Open");
+            ui.horizontal(|ui| {
+                ui.label("Collider Scale: ");
+                ui.add(egui::Slider::new(&mut ui_state.collider_value, 0.0..=10.0));
+            });
+            ui.horizontal(|ui| {
+                ui.label("Velocity: ");
+                ui.add(egui::Slider::new(&mut ui_state.velocity_value, 0.0..=10.0));
+            });
+
+            ui.allocate_space(egui::Vec2::new(1.0, 10.0));
+            ui.horizontal(|ui| {
+                ui.label("Damage Extent: ");
+                ui.add(egui::Slider::new(&mut ui_state.damage_value, 0.0..=10.0));
+            });
+            ui.horizontal(|ui| {
+                ui.label("Cooldown Time: ");
+                ui.add(egui::Slider::new(&mut ui_state.cooldown_value, 0.0..=10.0));
+            });
 
             //If you want your panel to be resizable you also need a widget in it that takes up more space as you resize it, such as:
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
@@ -423,6 +540,17 @@ pub fn ui_example(
                     std::process::exit(0);
                 }
                 if ui.button("Quit").clicked() {
+                    std::process::exit(0);
+                }
+            });
+            egui::menu::menu_button(ui, "Mode", |ui| {
+                if ui.button("World Builder").clicked() {
+                    std::process::exit(0);
+                }
+                if ui.button("Ability Creator").clicked() {
+                    std::process::exit(0);
+                }
+                if ui.button("Play").clicked() {
                     std::process::exit(0);
                 }
             });
