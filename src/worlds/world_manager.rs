@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
 use bevy_rapier3d::prelude::*;
 
+use crate::colliders::collider;
+
 #[derive(Debug)]
 // IWorlds are relatively adjacent and grow in a spiral (TODO)
 pub struct InsightWorld {
@@ -47,7 +49,12 @@ impl IWorld {
     }
 
     // Boundary: Surrounds outermost planes
-    pub fn get_boundary(&mut self, mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>,) {
+    pub fn get_boundary(
+        &mut self,
+        mut commands: Commands,
+        mut meshes: ResMut<Assets<Mesh>>,
+        mut materials: ResMut<Assets<StandardMaterial>>,
+    ) {
         let mut x_min = 0;
         let mut x_max = 0;
         let mut y_min = 0;
@@ -83,11 +90,7 @@ impl IWorld {
         let y_half_dist = (15 * (y_max - y_min) / 2) as f32;
         let z_half_dist = (15 * (z_max - z_min) / 2) as f32;
 
-        let transform = Transform::from_xyz(
-            x_half, 
-            y_half, 
-            z_half 
-        );
+        let transform = Transform::from_xyz(x_half, y_half, z_half);
         // Plane
         commands
             .spawn_bundle(PbrBundle {
@@ -95,25 +98,24 @@ impl IWorld {
                 transform,
                 ..Default::default()
             })
-            .insert(RigidBody::Fixed) 
+            .insert(RigidBody::Fixed)
             //half the cube size
-            .insert(Collider::cuboid( // Should player be able to fall off plane?
+            .insert(Collider::cuboid(
+                // Should player be able to fall off plane?
                 x_half_dist + 7.5,
-                y_half_dist, 
-                z_half_dist + 7.5
+                y_half_dist,
+                z_half_dist + 7.5,
             ))
-            .insert(ColliderDebugColor(
-                Color::hsl(220.0, 1.0, 0.3))
-            );
+            .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
 
-        commands.spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 0.0),
-                ..default()
-            },
-            ..Default::default()
-        });
+        // commands.spawn_bundle(PbrBundle {
+        //     mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+        //     transform: Transform {
+        //         translation: Vec3::new(0.0, 0.0, 0.0),
+        //         ..default()
+        //     },
+        //     ..Default::default()
+        // });
     }
 
     pub fn add_plane(

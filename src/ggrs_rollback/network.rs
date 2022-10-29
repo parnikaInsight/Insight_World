@@ -21,6 +21,7 @@ use crate::animation::animation_helper;
 use crate::players::{info, movement};
 use crate::worlds::world_manager;
 
+
 const CUBE_SIZE: f32 = 0.2;
 const BLUE: Color = Color::rgb(0.8, 0.6, 0.2);
 const ORANGE: Color = Color::rgb(0., 0.35, 0.8);
@@ -70,6 +71,7 @@ pub fn setup_system(
                 scene: player_handle.clone(),
                 ..default()
             })
+            
             // Add player information.
             .insert(info::Player {
                 handle: handle as u32,
@@ -89,6 +91,7 @@ pub fn setup_system(
             .insert_bundle(PickableBundle::default()) // Player can be clicked.
             // Indicates bevy_GGRS that this entity should be saved and loaded.
             .insert(Rollback::new(rip.next_id()))
+            
             // Physics
             .insert(LockedAxes::ROTATION_LOCKED)
             .insert(RigidBody::Dynamic)
@@ -100,6 +103,7 @@ pub fn setup_system(
                     .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)));
             })
             .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+            
             // Animation Helper
             .insert(animation_helper::AnimationHelperSetup)
             .id();
@@ -109,58 +113,58 @@ pub fn setup_system(
         if q == handle {
             commands.entity(entity_id).insert(Me);
 
-            // Follow camera
-            let mut yaw_pitch = YawPitch::new();
-            yaw_pitch.set_rotation_quat(Quat::default());
+            // // Follow camera
+            // let mut yaw_pitch = YawPitch::new();
+            // yaw_pitch.set_rotation_quat(Quat::default());
+            //
+            // let t = Vec3::new(handle as f32, 0.0, 0.0);
+            // let camera = CameraRig::builder()
+            //     .with(Position::new(t))
+            //     .with(Rotation::new(Quat::default()))
+            //     .with(Smooth::new_position(1.25).predictive(true))
+            //     .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
+            //     .with(Smooth::new_position(2.5))
+            //     .with(yaw_pitch)
+            //     .with(
+            //         LookAt::new(t + Vec3::Y)
+            //             .tracking_smoothness(1.25)
+            //             .tracking_predictive(true),
+            //     )
+            //     .build();
 
-            let t = Vec3::new(handle as f32, 0.0, 0.0);
-            let camera = CameraRig::builder()
-                .with(Position::new(t))
-                .with(Rotation::new(Quat::default()))
-                .with(Smooth::new_position(1.25).predictive(true))
-                .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
-                .with(Smooth::new_position(2.5))
-                .with(yaw_pitch)
-                .with(
-                    LookAt::new(t + Vec3::Y)
-                        .tracking_smoothness(1.25)
-                        .tracking_predictive(true),
-                )
-                .build();
+            // commands.spawn().insert(camera).insert(Rig);
 
-            commands.spawn().insert(camera).insert(Rig);
+            // let t_cam = Vec3::new(handle as f32, 2.0, 5.0);
+            // commands
+            //     .spawn_bundle(Camera3dBundle {
+            //         transform: Transform {
+            //             translation: t_cam,
+            //             ..default()
+            //         },
+            //         ..Default::default()
+            //     })
+            //     .insert(UiCameraConfig {
+            //         //idk why not displaying
+            //         show_ui: true,
+            //         ..default()
+            //     })
+            //     .insert_bundle(PickingCameraBundle::default())
+            //     .insert(bevy_transform_gizmo::GizmoPickSource::default())
+            //     .insert(MainCamera);
 
-            let t_cam = Vec3::new(handle as f32, 2.0, 5.0);
-            commands
-                .spawn_bundle(Camera3dBundle {
-                    transform: Transform {
-                        translation: t_cam,
-                        ..default()
-                    },
-                    ..Default::default()
-                })
-                .insert(UiCameraConfig {
-                    //idk why not displaying
-                    show_ui: true,
-                    ..default()
-                })
-                .insert_bundle(PickingCameraBundle::default())
-                .insert(bevy_transform_gizmo::GizmoPickSource::default())
-                .insert(MainCamera);
-
-            // Directional 'sun' light.
-            commands.spawn_bundle(DirectionalLightBundle {
-                directional_light: DirectionalLight {
-                    illuminance: 32000.0,
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec3::new(0.0, 2.0, 0.0),
-                    rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4),
-                    ..default()
-                },
-                ..default()
-            });
+            // // Directional 'sun' light.
+            // commands.spawn_bundle(DirectionalLightBundle {
+            //     directional_light: DirectionalLight {
+            //         illuminance: 32000.0,
+            //         ..default()
+            //     },
+            //     transform: Transform {
+            //         translation: Vec3::new(0.0, 2.0, 0.0),
+            //         rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4),
+            //         ..default()
+            //     },
+            //     ..default()
+            // });
         }
     }
     println!("setup system");

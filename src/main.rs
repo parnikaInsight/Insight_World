@@ -14,12 +14,14 @@ mod ggrs_rollback;
 mod players;
 mod systems;
 mod worlds;
+mod colliders;
 
 use animation::{animation_helper, play};
 use default_world::create_default;
 use ggrs_rollback::{follow_camera, ggrs_camera, network};
 use players::{info, movement, physics};
 use worlds::{create_insight, player};
+use colliders::collider;
 
 const FPS: usize = 60;
 const ROLLBACK_DEFAULT: &str = "rollback_default";
@@ -78,15 +80,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_plugin(bevy_transform_gizmo::TransformGizmoPlugin::default())
         .add_plugin(DollyCursorGrab)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(RapierDebugRenderPlugin::default());
-
-    // // Camera
-    // app.add_startup_system(ggrs_camera::setup_camera)
-    //     .add_system(ggrs_camera::update_camera);
+        .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(collider::ColliderBuilderPlugin::default());
 
     // Camera
-    app.add_system(follow_camera::update_camera) //puts camera behind player
-        .add_system(follow_camera::frame); //follows player
+    app.add_startup_system(ggrs_camera::setup_camera)
+        .add_system(ggrs_camera::update_camera);
+
+    // // Follow Camera (uncomment in network.rs)
+    // app.add_system(follow_camera::update_camera) //puts camera behind player
+    //     .add_system(follow_camera::frame); //follows player
 
     // Setup Players
     app.add_startup_system(network::setup_system) // Start p2p session and add players.
