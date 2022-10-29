@@ -46,6 +46,9 @@ pub struct CollidableEntity {
 #[derive(Component)]
 pub struct MyCollider;
 
+#[derive(Component)]
+pub struct MyAbilityCollider;
+
 pub fn configure_visuals(mut egui_ctx: ResMut<EguiContext>) {
     egui_ctx.ctx_mut().set_visuals(egui::Visuals {
         window_rounding: 0.0.into(),
@@ -68,27 +71,29 @@ pub fn ui_example(
     // You are not required to store Egui texture ids in systems. We store this one here just to
     // demonstrate that rendering by using a texture id of a removed image is handled without
     // making bevy_egui panic.
-    mut rendered_texture_id: Local<egui::TextureId>,
-    mut rendered_texture_id2: Local<egui::TextureId>,
-    mut rendered_texture_id3: Local<egui::TextureId>,
-    mut rendered_texture_id4: Local<egui::TextureId>, // Cannot do more than 4
+    mut rendered_texture_ids: (Local<egui::TextureId>, Local<egui::TextureId>, Local<egui::TextureId>, Local<egui::TextureId>),
+    // mut rendered_texture_id: Local<egui::TextureId>,
+    // mut rendered_texture_id2: Local<egui::TextureId>,
+    // mut rendered_texture_id3: Local<egui::TextureId>,
+    // mut rendered_texture_id4: Local<egui::TextureId>, 
     mut is_initialized: Local<bool>,
     mut is_initialized2: Local<bool>,
-    mut is_initialized3: Local<bool>, // Cannot do more than 3
+    mut is_initialized3: Local<bool>, 
     // If you need to access the ids from multiple systems, you can also initialize the `Images`
     // resource while building the app and use `Res<Images>` instead.
     mut images: ResMut<Images>,
     asset_server: Res<AssetServer>,
+    mut ability_collider: Query<&mut Transform, With<MyAbilityCollider>>,
 ) {
     // World Builder
-    *rendered_texture_id = egui_ctx.add_image(asset_server.load(&images.img1[..]));
-    *rendered_texture_id2 = egui_ctx.add_image(asset_server.load(&images.img2[..]));
+    *rendered_texture_ids.0 = egui_ctx.add_image(asset_server.load(&images.img1[..]));
+    *rendered_texture_ids.1 = egui_ctx.add_image(asset_server.load(&images.img2[..]));
     //*rendered_texture_id3 = egui_ctx.add_image(asset_server.load(&images.img3[..]));
     //*rendered_texture_id4 = egui_ctx.add_image(asset_server.load("default_imgs/upload.png"));
-    *rendered_texture_id3 = egui_ctx.add_image(asset_server.load(&images.img3[..]));
+    *rendered_texture_ids.2 = egui_ctx.add_image(asset_server.load(&images.img3[..]));
     //*rendered_texture_id3 = egui_ctx.add_image(asset_server.load("default_imgs/eve.png"));
     //*rendered_texture_id4 = egui_ctx.add_image(asset_server.load("default_imgs/fireball.png"));
-    *rendered_texture_id4 = egui_ctx.add_image(asset_server.load(&images.img4[..]));
+    *rendered_texture_ids.3 = egui_ctx.add_image(asset_server.load(&images.img4[..]));
 
     let mut response_bool = false;
 
@@ -112,13 +117,13 @@ pub fn ui_example(
             if response_bool {
                 let search = ui_state.img_search_label.clone();
                 let v: Vec<&str> = search.split(' ').collect();
-                println!("PARNIKA {} done {:?}", search, v);
+                //println!("PARNIKA {} done {:?}", search, v);
                 let mut new_tags: HashSet<String> = HashSet::new();
                 for i in v.iter() {
                     new_tags.insert(i.to_string());
                 }
                 search_tags.tags = new_tags;
-                println!("Saxena {} done {:?}", search, search_tags.tags);
+                //println!("Saxena {} done {:?}", search, search_tags.tags);
 
                 // Update images with searches
                 let searched_assets = assets::get_assets(plane_assets.clone(), search_tags.clone());
@@ -126,7 +131,7 @@ pub fn ui_example(
                     let mut count = 0;
                     for a in searched_assets {
                         let s = format!("{}{}{}", "default_imgs/".to_owned(), a, ".png");
-                        println!("String {} {}", a, s);
+                        //println!("String {} {}", a, s);
                         if count == 0 {
                             images.img1 = s;
                         } 
@@ -147,14 +152,14 @@ pub fn ui_example(
             // First Image
             //ui.allocate_space(egui::Vec2::new(1.0, 20.0));
             let response1 = ui.add(egui::widgets::Image::new(
-                *rendered_texture_id,
+                *rendered_texture_ids.0,
                 [256.0, 256.0],
             ));
 
             // Second Image
             ui.allocate_space(egui::Vec2::new(1.0, 20.0));
             let response2 = ui.add(egui::widgets::Image::new(
-                *rendered_texture_id2,
+                *rendered_texture_ids.1,
                 [256.0, 256.0],
             ));
 
@@ -178,7 +183,7 @@ pub fn ui_example(
             // Spawn asset shown in image
             if response1.hovered() && !*is_initialized {
                 *is_initialized = true;
-                println!("1 hovered");
+               // println!("1 hovered");
                 if let Some(index) = images.img1.find(".") {
                     let name = images.img1[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
@@ -236,7 +241,7 @@ pub fn ui_example(
             }
             if response2.hovered() && !*is_initialized2 {
                 *is_initialized2 = true;
-                println!("2 hovered");
+               // println!("2 hovered");
                 if let Some(index) = images.img2.find(".") {
                     let name = images.img2[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
@@ -413,13 +418,13 @@ pub fn ui_example(
             if response_bool2 {
                 let search = ui_state.character_search_label.clone();
                 let v: Vec<&str> = search.split(' ').collect();
-                println!("PARNIKA {} done {:?}", search, v);
+                //println!("PARNIKA {} done {:?}", search, v);
                 let mut new_tags: HashSet<String> = HashSet::new();
                 for i in v.iter() {
                     new_tags.insert(i.to_string());
                 }
                 search_tags.tags = new_tags;
-                println!("Saxena {} done {:?}", search, search_tags.tags);
+                //println!("Saxena {} done {:?}", search, search_tags.tags);
 
                 // Update images with searches
                 let searched_assets = assets::get_assets(plane_assets.clone(), search_tags.clone());
@@ -433,14 +438,14 @@ pub fn ui_example(
             }
 
             let character_img = ui.add(egui::widgets::Image::new(
-                *rendered_texture_id3,
+                *rendered_texture_ids.2,
                 [256.0, 256.0],
             ));
 
             // Spawn asset shown in image
             if character_img.hovered() && !*is_initialized3 {
                 *is_initialized3 = true;
-                println!("3 hovered");
+                //println!("3 hovered");
                 if let Some(index) = images.img3.find(".") {
                     let name = images.img3[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
@@ -484,7 +489,7 @@ pub fn ui_example(
                                     transform: Transform::from_xyz(0.0, 0.0, 0.0),
                                     ..Default::default()
                                 })
-                                .insert(MyCollider)
+                                .insert(MyAbilityCollider)
                                 .insert_bundle(bevy_mod_picking::PickableBundle::default())
                                 .insert(bevy_transform_gizmo::GizmoTransformable)
                                 .insert(RigidBody::Fixed)
@@ -499,28 +504,33 @@ pub fn ui_example(
                 ui.text_edit_singleline(&mut ui_state.projectile_search_label);
             });
             ui.add(egui::widgets::Image::new(
-                *rendered_texture_id4,
+                *rendered_texture_ids.3,
                 [256.0, 256.0],
             ));
 
             ui.allocate_space(egui::Vec2::new(1.0, 10.0));
             ui.horizontal(|ui| {
                 ui.label("Collider Scale: ");
-                ui.add(egui::Slider::new(&mut ui_state.collider_value, 0.0..=10.0));
+                let slider = ui.add(egui::Slider::new(&mut ui_state.collider_value, 0.01..=10.0));
+                if slider.changed() {
+                    println!("collider Slider changed");
+                    change_collider_size(ability_collider, ui_state.collider_value);
+                    ui_state.velocity_value = change_velocity(ui_state.collider_value);
+                }
             });
             ui.horizontal(|ui| {
                 ui.label("Velocity: ");
-                ui.add(egui::Slider::new(&mut ui_state.velocity_value, 0.0..=10.0));
+                ui.add(egui::Slider::new(&mut ui_state.velocity_value, 1.0..=100.0));
             });
 
             ui.allocate_space(egui::Vec2::new(1.0, 10.0));
             ui.horizontal(|ui| {
                 ui.label("Damage Extent: ");
-                ui.add(egui::Slider::new(&mut ui_state.damage_value, 0.0..=10.0));
+                ui.add(egui::Slider::new(&mut ui_state.damage_value, 0.0..=100.0));
             });
             ui.horizontal(|ui| {
                 ui.label("Cooldown Time: ");
-                ui.add(egui::Slider::new(&mut ui_state.cooldown_value, 0.0..=10.0));
+                ui.add(egui::Slider::new(&mut ui_state.cooldown_value, 0.0..=100.0));
             });
 
             //If you want your panel to be resizable you also need a widget in it that takes up more space as you resize it, such as:
@@ -608,4 +618,16 @@ pub fn file_drop(mut dnd_evr: EventReader<FileDragAndDrop>) {
     // let path = Path::new("./assets/default_imgs/whale.jpg");
     // let mut file = File::create(path).unwrap();
     // let res = std::fs::copy("/Users/parnikasaxena/Downloads/whale.jpg", path);
+}
+
+fn change_collider_size(mut collider: Query<&mut Transform, With<MyAbilityCollider>>, factor: f32) {
+    let mut transform = collider.single_mut();
+    transform.scale = Vec3::new(1.0, 1.0, 1.0) * factor;
+}
+
+fn change_velocity(factor: f32) -> f32 {
+    let res = factor.floor();
+    //println!("factor {}, velocity: {:?}", factor, res);
+    let change = (res + 1.0) * 10.0;
+    change 
 }

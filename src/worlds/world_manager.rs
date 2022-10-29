@@ -47,7 +47,7 @@ impl IWorld {
     }
 
     // Boundary: Surrounds outermost planes
-    pub fn get_boundary(&mut self, mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
+    pub fn get_boundary(&mut self, mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>,) {
         let mut x_min = 0;
         let mut x_max = 0;
         let mut y_min = 0;
@@ -91,6 +91,7 @@ impl IWorld {
         // Plane
         commands
             .spawn_bundle(PbrBundle {
+                material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
                 transform,
                 ..Default::default()
             })
@@ -108,7 +109,7 @@ impl IWorld {
         commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
             transform: Transform {
-                translation: Vec3::new(0.0, 3.0, 0.0),
+                translation: Vec3::new(0.0, 0.0, 0.0),
                 ..default()
             },
             ..Default::default()
@@ -158,7 +159,7 @@ impl IWorld {
             });
             index += 1.0;
         }
-        self.get_boundary(commands, meshes);
+        self.get_boundary(commands, meshes, materials);
     }
 }
 

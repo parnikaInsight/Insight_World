@@ -12,18 +12,18 @@ mod animation;
 mod default_world;
 mod ggrs_rollback;
 mod players;
-mod worlds;
 mod systems;
+mod worlds;
 
 use animation::{animation_helper, play};
 use default_world::create_default;
-use ggrs_rollback::{ggrs_camera, network};
+use ggrs_rollback::{follow_camera, ggrs_camera, network};
 use players::{info, movement, physics};
 use worlds::{create_insight, player};
 
 const FPS: usize = 60;
 const ROLLBACK_DEFAULT: &str = "rollback_default";
-const ROLLBACK_DEFAULT2: &str = "rollback_default2"; 
+const ROLLBACK_DEFAULT2: &str = "rollback_default2";
 // cargo run -- --local-port 7000 --players localhost 127.0.0.1:7001
 // cargo run -- --local-port 7001 --players 127.0.0.1:7000 localhost
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -44,16 +44,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_rollback_type::<Transform>()
         //.register_rollback_type::<info::Velocity>()
         // These systems will be executed as part of the advance frame update.
-        .with_rollback_schedule(Schedule::default()
-            .with_stage(
-                ROLLBACK_DEFAULT,
-                SystemStage::parallel().with_system(movement::translate_player),
-            )
-            .with_stage_after(
-                ROLLBACK_DEFAULT,
-                ROLLBACK_DEFAULT2,
-                SystemStage::parallel().with_system(movement::animate_moving_player),
-            )
+        .with_rollback_schedule(
+            Schedule::default()
+                .with_stage(
+                    ROLLBACK_DEFAULT,
+                    SystemStage::parallel().with_system(movement::translate_player),
+                )
+                .with_stage_after(
+                    ROLLBACK_DEFAULT,
+                    ROLLBACK_DEFAULT2,
+                    SystemStage::parallel().with_system(movement::animate_moving_player),
+                ),
         )
         .build(&mut app);
 
@@ -79,9 +80,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default());
 
+    // // Camera
+    // app.add_startup_system(ggrs_camera::setup_camera)
+    //     .add_system(ggrs_camera::update_camera);
+
     // Camera
-    app.add_startup_system(ggrs_camera::setup_camera)
-        .add_system(ggrs_camera::update_camera);
+    app.add_system(follow_camera::update_camera) //puts camera behind player
+        .add_system(follow_camera::frame); //follows player
 
     // Setup Players
     app.add_startup_system(network::setup_system) // Start p2p session and add players.

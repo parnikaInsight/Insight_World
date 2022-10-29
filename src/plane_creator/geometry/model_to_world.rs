@@ -17,22 +17,6 @@ pub fn sizer(
     });
 }
 
-//with meshes
-pub fn sizer2(ass: Res<Assets<Gltf>>, asset_server: Res<AssetServer>, as_mesh: Res<Assets<Mesh>>) {
-    match ass.get(&asset_server.load("default_gltfs/victorian_street_lamp.glb")) {
-        Some(res) => {
-            let meshes = res.meshes.clone();
-            let mut count = 0;
-            for c in meshes.iter() {
-                println!("{:?}", c);
-                count += 1;
-            }
-            println!("meshes {}", count);
-        }
-        None => println!("2 hello"),
-    }
-}
-
 pub fn get_collision_params(collision_box: Aabb) -> (Vec3, Vec3) {
     let pos = collision_box.center;
     let half_extents = collision_box.half_extents.to_array();

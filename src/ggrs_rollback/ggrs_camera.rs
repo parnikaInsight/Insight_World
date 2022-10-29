@@ -1,15 +1,12 @@
 use bevy::input::mouse::MouseMotion;
-use bevy_dolly::prelude::*;
 use bevy::prelude::*;
+use bevy_dolly::prelude::*;
 use bevy_mod_picking::*;
 
 #[derive(Component)]
 pub struct MainCamera; // Dolly fly camera
 
-pub fn setup_camera(
-    mut commands: Commands,
-    mut windows: ResMut<Windows>,
-) {
+pub fn setup_camera(mut commands: Commands, mut windows: ResMut<Windows>) {
     // Camera Setup
 
     let translation = [-2.0f32, 2.0f32, 5.0f32];
@@ -21,6 +18,7 @@ pub fn setup_camera(
 
     // Insert camera rig to control camera movement.
     // Camera added separately.
+
     commands.spawn().insert(
         CameraRig::builder()
             .with(Position {
@@ -32,17 +30,34 @@ pub fn setup_camera(
             .build(),
     );
 
+    // Follow Camera
+    // commands.spawn().insert(
+    //     CameraRig::builder()
+    //         .with(Position {translation: transform.translation,})
+    //         .with(Rotation {rotation})
+    //         .with(yaw_pitch)
+    //         .with(Smooth::new_position(1.25).predictive(true))
+    //         .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
+    //         .with(Smooth::new_position(2.5))
+    //         .with(
+    //             LookAt::new(transform.translation + Vec3::Y)
+    //                 .tracking_smoothness(1.25)
+    //                 .tracking_predictive(true),
+    //         )
+    //         .build(),
+    // );
+
     // Create camera.
     commands
         .spawn_bundle(Camera3dBundle {
             transform,
             ..Default::default()
         })
-        .insert(UiCameraConfig { //Currently not displaying
+        .insert(UiCameraConfig {
+            //Currently not displaying
             show_ui: true,
             ..default()
         })
-
         .insert_bundle(PickingCameraBundle::default())
         .insert(MainCamera)
         .insert(bevy_transform_gizmo::GizmoPickSource::default());
@@ -104,7 +119,7 @@ pub fn update_camera(
         move_vec.y -= 1.0;
     }
     let window = windows.get_primary_mut().unwrap();
-    if keys.just_pressed(KeyCode::RShift){
+    if keys.just_pressed(KeyCode::RShift) {
         //println!("Rshift pressed");
         toggle_grab_cursor(window);
     }
@@ -147,7 +162,6 @@ pub fn update_camera(
 
     cam.update(transform);
 }
-
 
 /// Grabs/ungrabs mouse cursor
 fn toggle_grab_cursor(window: &mut Window) {
