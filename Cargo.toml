@@ -31,6 +31,8 @@ serde_json = "1.0.81"
 serde-big-array = "0.4.1"
 rocksdb = "0.19.0"
 emath = "0.19.0"
+#networks
+libp2p = "0.49.0"
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -42,3 +44,8 @@ opt-level = 1
 [[bin]]
 name = "plane_creator"
 path = "src/plane_creator/main.rs"
+
+
+[[bin]]
+name = "networks"
+path = "src/networks/main.rs"
