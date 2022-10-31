@@ -32,6 +32,7 @@ dependencies = [
  "serde_json",
  "structopt",
  "tokio",
+ "void",
  "zeroize",
 ]
 

@@ -1,7 +1,20 @@
-//! Demonstrates how to perform Kademlia queries on the IPFS network.
+//! identify example
 //!
-//! You can pass as parameter a base58 peer ID to search for. If you don't pass any parameter, a
-//! peer ID will be generated randomly.
+//! In the first terminal window, run:
+//!
+//! ```sh
+//! cargo run --example identify
+//! ```
+//! It will print the [`PeerId`] and the listening addresses, e.g. `Listening on
+//! "/ip4/127.0.0.1/tcp/24915"`
+//!
+//! In the second terminal window, start a new instance of the example with:
+//!
+//! ```sh
+//! cargo run --example identify -- /ip4/127.0.0.1/tcp/24915
+//! ```
+//! The two nodes establish a connection, negotiate the identify protocol
+//! and will send each other identify info which is then printed to the console.
 
 use bevy::prelude::*;
 use async_std::task;

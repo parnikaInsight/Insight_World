@@ -19,7 +19,7 @@ use futures::executor::block_on;
 mod behavior;
 mod connection;
 
-use behavior::{kademlia, mdns, identify};
+use behavior::{kademlia, mdns, identify, protocol};
 use connection::{swarm};
 
 
@@ -30,13 +30,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let local_key = identity::Keypair::generate_ed25519();
     let local_peer_id = PeerId::from(local_key.public());
 
-    let my_future = kademlia::kademlia(local_key.clone(), local_peer_id);
-    let my_future2 = mdns::mdns(local_key.clone(), local_peer_id);
-    let my_future3 = identify::identify(local_key.clone(), local_peer_id);
-
-    // thread::spawn(move || block_on(my_future).expect("Kademlia Thread Spawn Error"));
-    // thread::spawn(move || block_on(my_future2).expect("Mdns Thread Spawn Error"));
-    thread::spawn(move || block_on(my_future3).expect("Identify Thread Spawn Error"));
+    let my_future = protocol::process_swarm_events(local_key.clone(), local_peer_id);
+    thread::spawn(move || block_on(my_future).expect("Thread Spawn Error"));
 
     App::new()
         .add_plugins(DefaultPlugins)
