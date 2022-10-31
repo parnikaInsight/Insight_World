@@ -15,6 +15,7 @@ mod players;
 mod systems;
 mod worlds;
 mod colliders;
+//mod networks;
 
 use animation::{animation_helper, play};
 use default_world::create_default;
