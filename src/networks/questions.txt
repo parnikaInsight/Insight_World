@@ -1,1 +1,3 @@
 1.) Will users need protobuf installed? https://docs.rs/prost-build/latest/prost_build/#sourcing-protoc
+2.) For relay, can they run client and relay behaviors? Will all gamers have client behavior and bootnodes
+have relay behavior? Will there be a separate executable for public nodes?
