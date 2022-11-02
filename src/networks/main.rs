@@ -20,7 +20,7 @@ mod behavior;
 mod connection;
 
 use behavior::{kademlia, mdns, identify, protocol};
-use connection::{swarm};
+use connection::{swarm, peers};
 
 
 // #[async_std::main]
@@ -31,8 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let local_peer_id = PeerId::from(local_key.public());
 
     let local_key = identity::Keypair::from_protobuf_encoding(&peers::P1KEY).expect("Decoding Error");
-    let local_peer_id = PeerId::from(private.public());
-
+    let local_peer_id = PeerId::from(local_key.public());
 
     let my_future = protocol::process_swarm_events(local_key.clone(), local_peer_id);
     thread::spawn(move || block_on(my_future).expect("Thread Spawn Error"));
