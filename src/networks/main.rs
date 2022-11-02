@@ -20,14 +20,17 @@ mod behavior;
 mod connection;
 
 use behavior::{kademlia, mdns, identify, protocol};
-use connection::{swarm};
+use connection::{swarm, peers};
 
 
 // #[async_std::main]
 fn main() -> Result<(), Box<dyn Error>> {
 
-    // Create a random key for ourselves.
-    let local_key = identity::Keypair::generate_ed25519();
+    // // Create a random key for ourselves.
+    // let local_key = identity::Keypair::generate_ed25519();
+    // let local_peer_id = PeerId::from(local_key.public());
+
+    let local_key = identity::Keypair::from_protobuf_encoding(&peers::P2KEY).expect("Decoding Error");
     let local_peer_id = PeerId::from(local_key.public());
 
     let my_future = protocol::process_swarm_events(local_key.clone(), local_peer_id);

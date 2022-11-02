@@ -31,6 +31,7 @@ use std::net::Ipv4Addr;
 use std::{env, error::Error, str::FromStr, thread, time::Duration};
 
 use crate::behavior::my_behavior::MyBehavior;
+use crate::connection::peers;
 
 const BOOTNODES: [&str; 4] = [
     "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
@@ -137,7 +138,14 @@ pub async fn create_swarm(
 
         // Create a relay behavior
         // Relay transport and client created in build_transport
+
+        // TODO: Find closest public relay nodes to me via Kademlia protocol
+        // For now, using a libp2p.io bootnode as a relay
+        // I am Peer B
+
         // Establish relayed connections by dialing /p2p-circuit addresses.
+        let key_A = identity::Keypair::from_protobuf_encoding(&peers::P1KEY).expect("Decoding Error");
+        let id_A = PeerId::from(key_A.public());
         let dst_addr_via_relay = Multiaddr::empty()
             //.with(Protocol::Memory(40)) // Relay address. // "/ip4/147.75.87.27/tcp/4001
             .with(Protocol::Ip4(Ipv4Addr::new(147, 75, 87, 27)))
@@ -148,12 +156,14 @@ pub async fn create_swarm(
                     .into(),
             )) // Relay peer id.
             .with(Protocol::P2pCircuit) // Signal to connect via relay and not directly.
-            .with(Protocol::P2p(
-                PeerId::from_str("QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa")
-                    .unwrap()
-                    .into(),
-            )); // Destination peer id.
+            // .with(Protocol::P2p(
+            //     PeerId::from_str("QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa")
+            //         .unwrap()
+            //         .into(),
+            // )); // Destination peer id. (Peer A)
+            .with(Protocol::P2p(id_A.into())); // Destination peer id. (Peer A)
         transport.dial(dst_addr_via_relay).unwrap();
+        // TODO: Advertise oneself as <RELAY_ADDR>/p2p-circuit/<PEER_ID_B>
 
         // Listen for incoming relayed connections via specific relay.
         let relay_addr = Multiaddr::empty()
