@@ -178,6 +178,9 @@ pub async fn create_swarm(
             .with(Protocol::P2pCircuit); // Signal to listen via remote relay node.
         transport.listen_on(relay_addr).unwrap();
 
+        // TODO: Request connection to B via circuit relay v2 protocol
+        // TODO: Accept connection request from B
+
         // Create a dcutr behavior
         let dcutr = dcutr::behaviour::Behaviour::new();
         // A and B must coordinate dial

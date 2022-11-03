@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use futures::AsyncBufReadExt;
 use futures::StreamExt;
 use futures::select;
-use libp2p::core::identity::Keypair;
+use libp2p::core::identity;
 use libp2p::kad::record::store::MemoryStore;
 use libp2p::kad::{
     record::Key, AddProviderOk, GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent,
@@ -18,12 +18,12 @@ use libp2p::{
 use std::{env, error::Error, str::FromStr, thread, time::Duration};
 
 use crate::behavior::{kademlia, my_behavior};
-use crate::connection::swarm;
+use crate::connection::{swarm, peers};
 
 use super::my_behavior::MyBehavior;
 
 pub async fn process_swarm_events(
-    local_key: Keypair,
+    local_key: identity::Keypair,
     local_peer_id: PeerId,
 ) -> Result<(), Box<dyn Error>> {
     let mut swarm = swarm::create_swarm(local_key, local_peer_id).await?;
@@ -44,6 +44,14 @@ pub async fn process_swarm_events(
 
     // Read full lines from stdin
     let mut stdin = io::BufReader::new(io::stdin()).lines().fuse();
+
+    let relay_peer_id = PeerId::from_str("QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb")
+        .unwrap()
+        .into();
+    // I am A
+    let key_B_dst =
+        identity::Keypair::from_protobuf_encoding(&peers::P2KEY).expect("Decoding Error");
+    let id_B_dst = PeerId::from(key_B_dst.public());
 
     loop {
         select! {
@@ -71,12 +79,12 @@ pub async fn process_swarm_events(
                 //     kademlia::kademlia_query_results(result);
                 // },
 
-                // // Identify (dial multiaddress)
-                // SwarmEvent::NewListenAddr { address, .. } => println!("Listening on {:?}", address),
-                // // Prints peer id identify info is being sent to.
-                // SwarmEvent::Behaviour(my_behavior::Event::Identify(identify::Event::Sent { peer_id, .. })) => {
-                //     println!("Sent identify info to {:?}", peer_id)
-                // }
+                // Identify (dial multiaddress)
+                SwarmEvent::NewListenAddr { address, .. } => println!("Listening on {:?}", address),
+                // Prints peer id identify info is being sent to.
+                SwarmEvent::Behaviour(my_behavior::Event::Identify(identify::Event::Sent { peer_id, .. })) => {
+                    println!("Sent identify info to {:?}", peer_id)
+                }
                 // // Prints out the info received via the identify event
                 // SwarmEvent::Behaviour(my_behavior::Event::Identify(identify::Event::Received { info, .. })) => {
                 //     println!("Received {:?}", info)
@@ -102,11 +110,28 @@ pub async fn process_swarm_events(
                 },
 
                 // Relay Client
+                SwarmEvent::Dialing(peer_id) if peer_id == relay_peer_id => {
+                    println!("Dialing Relay {:?}", relay_peer_id);
+                }
+                SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) if peer == relay_peer_id => {
+                    println!("Relay Ping {:?} {:?}", peer, result);
+                },
+                SwarmEvent::ConnectionEstablished { peer_id, .. } if peer_id == relay_peer_id => {
+                    println!("Relay Connection Established {:?}", relay_peer_id);
+                }
+                
+                SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) if peer == id_B_dst => {
+                    println!("Dst Ping {:?} {:?}", peer, result);
+                },
+                SwarmEvent::ConnectionEstablished { peer_id, .. } if peer_id == id_B_dst => {
+                    println!("Dst Connection Established {:?}", peer_id);
+                },
+
                 SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqAccepted {relay_peer_id, renewal, limit})) => {
-                    println!("1 ReservationReqAccepted {:?}", relay_peer_id);
+                    println!("1 ReservationReqAccepted {:?} {}", relay_peer_id, renewal);
                 },
                 SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqFailed {relay_peer_id, renewal, error})) => {
-                    println!("2 ReservationReqFailed {:?}", relay_peer_id);
+                    println!("2 ReservationReqFailed {:?} {}", relay_peer_id, renewal);
                 },
                 SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::OutboundCircuitEstablished {relay_peer_id, limit})) => {
                     println!("3 OutboundCircuitEstablished {:?}", relay_peer_id);
