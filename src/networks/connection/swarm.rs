@@ -32,6 +32,7 @@ use std::{env, error::Error, str::FromStr, thread, time::Duration};
 
 use crate::behavior::my_behavior::MyBehavior;
 use crate::connection::peers;
+use crate::behavior::relay;
 
 const BOOTNODES: [&str; 4] = [
     "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
@@ -175,12 +176,16 @@ pub async fn create_swarm(
                     .unwrap()
                     .into(),
             )) // Relay peer id.
-            .with(Protocol::P2pCircuit); // Signal to listen via remote relay node.
+            .with(Protocol::P2pCircuit) // Signal to listen via remote relay node.
+            .with(Protocol::P2p(local_peer_id.into()));
         transport.listen_on(relay_addr).unwrap();
+
+        // TODO: Receive connection request from A via relay
+        // TODO: Accept connection request from A
 
         // Create a dcutr behavior
         let dcutr = dcutr::behaviour::Behaviour::new();
-        // A and B must coordinate dial
+        // TODO: A and B must coordinate dial
 
         let behaviour = MyBehavior {
             kademlia,

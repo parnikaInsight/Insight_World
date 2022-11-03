@@ -20,6 +20,7 @@ pub struct MyBehavior {
 
 }
 
+#[derive(Debug)]
 pub enum Event {
     Kademlia(KademliaEvent),
     Identify(identify::Event),
