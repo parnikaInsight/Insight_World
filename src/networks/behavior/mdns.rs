@@ -17,8 +17,8 @@ use libp2p::{
 use libp2p::core::identity::Keypair;
 use std::{env, thread, error::Error, str::FromStr, time::Duration};
 
-use crate::connection::swarm;
-use crate::behavior::my_behavior;
+use crate::networks::connection::swarm;
+use crate::networks::behavior::my_behavior;
 
 pub async fn mdns(
     local_key: Keypair, 

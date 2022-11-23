@@ -1,3 +1,4 @@
+use async_std::channel::RecvError;
 use bevy::pbr::PbrBundle;
 use bevy::pbr::PointLightBundle;
 use bevy::pbr::StandardMaterial;
@@ -13,6 +14,8 @@ use bevy_dolly::prelude::*;
 use bevy_ggrs::{Rollback, RollbackIdProvider};
 use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
+use crossbeam_channel::unbounded;
+use crossbeam_channel::Receiver;
 use ggrs::{
     Config, P2PSession, PlayerType, SessionBuilder, SpectatorSession, SyncTestSession,
     UdpNonBlockingSocket,
@@ -23,6 +26,7 @@ use std::net::SocketAddr;
 
 use crate::animation::animation_helper;
 use crate::components::comps;
+use crate::networks::behavior::protocol;
 use crate::players::{info, movement};
 use crate::worlds::world_manager;
 
@@ -220,8 +224,32 @@ impl Config for GGRSConfig {
     type Address = SocketAddr;
 }
 
+pub fn get_port(game_receiver: Receiver<String>) -> u16 {
+    loop {
+        let player_addr = game_receiver.recv();
+        match player_addr {
+            Ok(string) => {
+                let key: u32 = string[0..1].parse().unwrap();
+                // TODO: The timing of this may cause error and get stuck in loop
+                if key == 0 {
+                    let bytes = string.as_bytes();
+                    for (i, &item) in bytes.iter().enumerate() {
+                        if item == b':' {
+                           let port = string[i + 1..].parse().unwrap();
+                            return port;
+                        }
+                    }
+                }
+            }
+            _ => (),
+        }
+    }
+}
+
 // create a GGRS session (only runs locally for now)
-pub fn create_ggrs_session() -> Result<SessionBuilder<GGRSConfig>, Box<dyn std::error::Error>> {
+pub fn create_ggrs_session(
+    game_receiver: Receiver<String>,
+) -> Result<SessionBuilder<GGRSConfig>, Box<dyn std::error::Error>> {
     let mut sess_build = SessionBuilder::<GGRSConfig>::new()
         .with_num_players(2)
         .with_max_prediction_window(12) // (optional) set max prediction window
@@ -229,19 +257,37 @@ pub fn create_ggrs_session() -> Result<SessionBuilder<GGRSConfig>, Box<dyn std::
 
     // read cmd line arguments: 0 will be 7000, 1 will be 7001
     let args: Vec<String> = env::args().collect();
-    let query = &args[1];
-
-    sess_build = sess_build.add_player(PlayerType::Local, query.parse().unwrap())?;
-    if query == "0" {
-        let player_addr: &String = &String::from("127.0.0.1:7001");
-        // Should receive addresses of discovered peers
-        let remote_addr: SocketAddr = player_addr.parse()?;
-        sess_build = sess_build.add_player(PlayerType::Remote(remote_addr), 1)?;
+    let query = args[1].parse().unwrap();
+    let mut other = 10;
+    if query == 0 {
+        other = 1;
     } else {
-        let player_addr: &String = &String::from("127.0.0.1:7000");
-        // Should receive addresses of discovered peers
-        let remote_addr: SocketAddr = player_addr.parse()?;
-        sess_build = sess_build.add_player(PlayerType::Remote(remote_addr), 0)?;
+        other = 0;
+    }
+    let mut port = -1;
+    loop {
+        let player_addr = game_receiver.recv();
+        match player_addr {
+            Ok(string) => {
+                let key: u32 = string[0..1].parse().unwrap();
+                // TODO: The timing of this may cause error and get stuck in loop
+                
+                if key == 1 {
+                    println!("created session");
+                    // Add me
+                    sess_build = sess_build.add_player(PlayerType::Local, query)?;
+
+                    // Add peers
+                    // Should receive addresses of discovered peers
+                    let remote_addr: SocketAddr = string[2..].parse()?;
+                    println!("socket addr: {:?}", remote_addr);
+                    sess_build = sess_build.add_player(PlayerType::Remote(remote_addr), other)?;
+
+                    break;
+                }
+            }
+            Err(_) => (),
+        }
     }
 
     Ok(sess_build)
@@ -250,20 +296,13 @@ pub fn create_ggrs_session() -> Result<SessionBuilder<GGRSConfig>, Box<dyn std::
 // Start the GGRS session for my port.
 pub fn start_ggrs_session(
     sess_build: SessionBuilder<GGRSConfig>,
+    port: u16,
+    game_receiver: Receiver<String>,
 ) -> Result<P2PSession<GGRSConfig>, Box<dyn std::error::Error>> {
-    // Read cmd line arguments: 0 will be 7000, 1 will be 7001
-    let args: Vec<String> = env::args().collect();
-    let query = &args[1];
 
-    //let socket = UdpNonBlockingSocket::bind_to_port("/ip4/0.0.0.0/udp/0/quic")?;
     let sess: P2PSession<GGRSConfig>;
-    if query == "0" {
-        let socket = UdpNonBlockingSocket::bind_to_port(7000)?;
-        sess = sess_build.start_p2p_session(socket)?;
-    } else {
-        let socket = UdpNonBlockingSocket::bind_to_port(7001)?;
-        sess = sess_build.start_p2p_session(socket)?;
-    }
+    let socket = UdpNonBlockingSocket::bind_to_port(port)?;
+    sess = sess_build.start_p2p_session(socket)?;
 
     Ok(sess)
 }

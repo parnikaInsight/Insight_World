@@ -7,7 +7,20 @@ use bevy_ggrs::{GGRSPlugin, SessionType};
 //use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
+use async_std::task;
+use futures::StreamExt;
+use libp2p::kad::record::store::MemoryStore;
+use libp2p::kad::{GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent, QueryResult};
+use libp2p::{
+    development_transport, identity,
+    swarm::{Swarm, SwarmEvent},
+    Multiaddr, PeerId,
+};
+use std::{env, thread, error::Error, str::FromStr, time::Duration};
+use futures::executor::block_on;
+use crossbeam_channel::unbounded;
 
+mod networks;
 mod animation;
 mod colliders;
 mod components;
@@ -17,7 +30,7 @@ mod plane_creator;
 mod players;
 mod systems;
 mod worlds;
-//mod networks;
+mod blockchain;
 
 use animation::{animation_helper, play};
 use colliders::collider;
@@ -26,6 +39,9 @@ use ggrs_rollback::{follow_camera, ggrs_camera, network};
 use plane_creator::{db::assets, geometry::{bevy_ui, my_plane}, save::save_world};
 use players::{info, movement, physics};
 use worlds::{create_insight, player};
+use networks::behavior::{kademlia, mdns, identify, protocol};
+use networks::connection::{swarm, peers};
+use networks::structs::{BackendRequest, GameRequest};
 
 const FPS: usize = 60;
 const ROLLBACK_DEFAULT: &str = "rollback_default";
@@ -36,17 +52,37 @@ pub const HEIGHT: f32 = 800.0;
 // cargo run -- --local-port 7000 --players localhost 127.0.0.1:7001
 // cargo run -- --local-port 7001 --players 127.0.0.1:7000 localhost
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut app = App::new();
+    let args: Vec<String> = env::args().collect();
+    let query:u32 = args[1].parse().unwrap();
+
+    let mut local_key = identity::Keypair::from_protobuf_encoding(&peers::P2KEY).expect("Decoding Error");
+    if query == 0 {
+        local_key = identity::Keypair::from_protobuf_encoding(&peers::P1KEY).expect("Decoding Error");
+    }
+    let local_peer_id = PeerId::from(local_key.public());
+
+    //Crossbeam channel set up
+    let (networks_sender, game_receiver) = unbounded::<String>();
+    let (_game_sender, networks_receiver) = unbounded::<String>();
+    // let my_future =
+    //     protocol::core::into_protocol(private, peerid, backend_sender, backend_reciever);
+
+    let my_future = protocol::process_swarm_events(local_key.clone(), local_peer_id, networks_sender);
+    thread::spawn(move || block_on(my_future).expect("Thread Spawn Error"));
+
+    let mut app = App::new(); //.add_plugins(DefaultPlugins).run();
     app.init_resource::<menu::PlaneCreatorState>();
     app.add_startup_system(menu::configure_plane_creator_state);
     app.init_resource::<menu::MetaverseState>();
     app.add_startup_system(menu::configure_metaverse_state);
 
+    let port = network::get_port(game_receiver.clone());
+
     // Create a GGRS session.
-    let sess_build = network::create_ggrs_session().unwrap();
+    let sess_build = network::create_ggrs_session(game_receiver.clone()).unwrap();
 
     // Start the GGRS session.
-    let sess = network::start_ggrs_session(sess_build).unwrap();
+    let sess = network::start_ggrs_session(sess_build, port, game_receiver).unwrap();
 
     // GGRS Configuration
     GGRSPlugin::<network::GGRSConfig>::new()

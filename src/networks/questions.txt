@@ -3,3 +3,4 @@
 have relay behavior? Will there be a separate executable for public nodes?
 3.) LLVM cross build CMake
 4.) Even though I specify relay's ipv4 address, how am I able to listen on an ip6 relay address assigned to relay?
+5.) https://github.com/gschup/ggrs/issues/35

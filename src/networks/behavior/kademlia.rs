@@ -43,8 +43,8 @@ use libp2p::{
 use std::{env, error::Error, str::FromStr, thread, time::Duration};
 use void::Void;
 
-use crate::behavior::my_behavior;
-use crate::connection::swarm;
+use crate::networks::behavior::my_behavior;
+use crate::networks::connection::swarm;
 
 pub async fn kademlia(local_key: Keypair, local_peer_id: PeerId) -> Result<(), Box<dyn Error>> {
     let mut swarm = swarm::create_swarm(local_key, local_peer_id).await?;

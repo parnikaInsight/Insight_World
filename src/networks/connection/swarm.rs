@@ -30,9 +30,9 @@ use libp2p::{
 use std::net::Ipv4Addr;
 use std::{env, error::Error, str::FromStr, thread, time::Duration};
 
-use crate::behavior::my_behavior::MyBehavior;
-use crate::connection::peers;
-use crate::behavior::relay;
+use crate::networks::behavior::my_behavior::MyBehavior;
+use crate::networks::connection::peers;
+use crate::networks::behavior::relay;
 
 const BOOTNODES: [&str; 4] = [
     "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
