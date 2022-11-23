@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::components::comps;
+
 #[derive(Clone, Debug)]
 pub struct CharacterAnimations(pub Vec<Handle<AnimationClip>>);
 
@@ -7,26 +9,31 @@ pub struct CharacterAnimations(pub Vec<Handle<AnimationClip>>);
 pub fn setup_character(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut initialized: Local<bool>,
 ) {
     // Insert a resource with the current scene information
     // TODO: Insert animation rig w/t skin to use between characters
-    commands.insert_resource(CharacterAnimations(vec![ 
-        // // with girl skin
-        // asset_server.load("mixamo/idle.glb#Animation0"), 
-        // asset_server.load("mixamo/shoot.glb#Animation0"),
-        // asset_server.load("mixamo/flip_uppercut.glb#Animation0"),
-        
-        // no skin
-        asset_server.load("default_characters/idle_breathing.glb#Animation0"), 
-        asset_server.load("default_characters/shoot.glb#Animation0"),
-        asset_server.load("default_characters/flip_punch.glb#Animation0"),    
-        asset_server.load("default_characters/dance.glb#Animation0"),    
-        asset_server.load("default_characters/straight_punch.glb#Animation0"),    
-        asset_server.load("default_characters/fly_back_death.glb#Animation0"),   
-        asset_server.load("default_characters/jump_attack.glb#Animation0"),    
-        asset_server.load("default_characters/injured.glb#Animation0"),  
-        asset_server.load("default_characters/two_hands_spell.glb#Animation0"),  
-    ]));
+    if !*initialized {
+        println!("added animations");
+        commands.insert_resource(CharacterAnimations(vec![
+            // // with girl skin
+            // asset_server.load("mixamo/idle.glb#Animation0"),
+            // asset_server.load("mixamo/shoot.glb#Animation0"),
+            // asset_server.load("mixamo/flip_uppercut.glb#Animation0"),
+
+            // no skin
+            asset_server.load("default_characters/idle_breathing.glb#Animation0"),
+            asset_server.load("default_characters/shoot.glb#Animation0"),
+            asset_server.load("default_characters/flip_punch.glb#Animation0"),
+            asset_server.load("default_characters/dance.glb#Animation0"),
+            asset_server.load("default_characters/straight_punch.glb#Animation0"),
+            asset_server.load("default_characters/fly_back_death.glb#Animation0"),
+            asset_server.load("default_characters/jump_attack.glb#Animation0"),
+            asset_server.load("default_characters/injured.glb#Animation0"),
+            asset_server.load("default_characters/two_hands_spell.glb#Animation0"),
+        ]));
+        *initialized = true;
+    }
 }
 
 #[derive(Debug)]
@@ -37,7 +44,7 @@ pub fn play_scene(
     animations: Res<Animations>,
     mut player: Query<&mut AnimationPlayer, Added<AnimationPlayer>>,
 ) {
-    for mut anim in player.iter_mut(){
+    for mut anim in player.iter_mut() {
         anim.play(animations.0[0].clone_weak()).repeat();
     }
- }
+}

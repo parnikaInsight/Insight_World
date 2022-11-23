@@ -22,9 +22,9 @@ use std::env;
 use std::net::SocketAddr;
 
 use crate::animation::animation_helper;
+use crate::components::comps;
 use crate::players::{info, movement};
 use crate::worlds::world_manager;
-use crate::components::comps;
 
 const CUBE_SIZE: f32 = 0.2;
 const BLUE: Color = Color::rgb(0.8, 0.6, 0.2);
@@ -43,161 +43,162 @@ pub fn setup_system(
     synctest_session: Option<Res<SyncTestSession<GGRSConfig>>>,
     spectator_session: Option<Res<SpectatorSession<GGRSConfig>>>,
     mut create_window_events: EventWriter<CreateWindow>,
+    mut startups: Query<Entity, (With<comps::startup>, With<comps::Meta_Comp>)>,
 ) {
-    //start creating p2p session
-    let num_players = p2p_session
-        .map(|s| s.num_players())
-        .or_else(|| synctest_session.map(|s| s.num_players()))
-        .or_else(|| spectator_session.map(|s| s.num_players()))
-        .expect("No GGRS session found");
+    if startups.iter().len() == 0 {
+        println!("setup system");
+        //start creating p2p session
+        let num_players = p2p_session
+            .map(|s| s.num_players())
+            .or_else(|| synctest_session.map(|s| s.num_players()))
+            .or_else(|| spectator_session.map(|s| s.num_players()))
+            .expect("No GGRS session found");
 
-    // read cmd line arguments: 0 will be 7000, 1 will be 7001
-    let args: Vec<String> = env::args().collect();
-    let query = &args[1];
+        // read cmd line arguments: 0 will be 7000, 1 will be 7001
+        let args: Vec<String> = env::args().collect();
+        let query = &args[1];
 
-    // Add player scene.
-    let mut player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
+        // Add player scene.
+        let mut player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
 
-    // Players identified in ggrs by handles starting from 0.
-    for handle in 0..num_players {
-        if handle == 1 {
-            // TODO
-            player_handle = asset_server.load("default_characters/ninja_tpose.glb#Scene0");
-        } else {
-            player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
-        }
-        let entity_id = commands
-            // Create player.
-            .spawn_bundle(SceneBundle {
-                transform: Transform {
-                    translation: Vec3::new(handle as f32, 0.0, -5.0),
+        // Players identified in ggrs by handles starting from 0.
+        for handle in 0..num_players {
+            if handle == 1 {
+                // TODO
+                player_handle = asset_server.load("default_characters/ninja_tpose.glb#Scene0");
+            } else {
+                player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
+            }
+            let entity_id = commands
+                // Create player.
+                .spawn_bundle(SceneBundle {
+                    transform: Transform {
+                        translation: Vec3::new(handle as f32, 0.0, -5.0),
+                        ..default()
+                    },
+                    scene: player_handle.clone(),
                     ..default()
-                },
-                scene: player_handle.clone(),
-                ..default()
-            })
-            .insert(comps::Meta_Comp)
-            .insert(comps::startup)
-            // Add player information.
-            .insert(info::Player {
-                handle: handle as u32,
-                money: 50,
-                bounties: 3,
-                friends: HashSet::new(),
-                health: 100,
-                world: 0,
-                plane: world_manager::IPlane::new(0, 0, 0),
-                state: info::PlayerState::default(),
-                target: info::MovementTarget::default(),
-                speed: info::MovementSpeed { speed: 3.0 },
-                ability_id: 0,
-                abilities: Vec::new(),
-            })
-            .insert(info::Information::default())
-            .insert_bundle(PickableBundle::default()) // Player can be clicked.
-            // Indicates bevy_GGRS that this entity should be saved and loaded.
-            .insert(Rollback::new(rip.next_id()))
-            // Physics
-            .insert(LockedAxes::ROTATION_LOCKED)
-            .insert(RigidBody::Dynamic)
-            .with_children(|children| {
-                children
-                    .spawn()
-                    .insert(Collider::cuboid(0.5, 1.0, 0.5))
-                    // Position the collider relative to the rigid-body.
-                    .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)));
-            })
-            .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
-            // Animation Helper
-            .insert(animation_helper::AnimationHelperSetup)
-            .id();
+                })
+                .insert(comps::Meta_Comp)
+                .insert(comps::startup)
+                // Add player information.
+                .insert(info::Player {
+                    handle: handle as u32,
+                    money: 50,
+                    bounties: 3,
+                    friends: HashSet::new(),
+                    health: 100,
+                    world: 0,
+                    plane: world_manager::IPlane::new(0, 0, 0),
+                    state: info::PlayerState::default(),
+                    target: info::MovementTarget::default(),
+                    speed: info::MovementSpeed { speed: 3.0 },
+                    ability_id: 0,
+                    abilities: Vec::new(),
+                })
+                .insert(info::Information::default())
+                .insert_bundle(PickableBundle::default()) // Player can be clicked.
+                // Indicates bevy_GGRS that this entity should be saved and loaded.
+                .insert(Rollback::new(rip.next_id()))
+                // Physics
+                .insert(LockedAxes::ROTATION_LOCKED)
+                .insert(RigidBody::Dynamic)
+                .with_children(|children| {
+                    children
+                        .spawn()
+                        .insert(Collider::cuboid(0.5, 1.0, 0.5))
+                        // Position the collider relative to the rigid-body.
+                        .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)));
+                })
+                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
+                // Animation Helper
+                .insert(animation_helper::AnimationHelperSetup)
+                .id();
 
-        // Insert my player.
-        let q: usize = query.parse().unwrap();
-        if q == handle {
-            commands.entity(entity_id).insert(Me);
+            // Insert my player.
+            let q: usize = query.parse().unwrap();
+            if q == handle {
+                commands.entity(entity_id).insert(Me);
 
-            // // Follow camera
-            // let mut yaw_pitch = YawPitch::new();
-            // yaw_pitch.set_rotation_quat(Quat::default());
+                // // Follow camera
+                // let mut yaw_pitch = YawPitch::new();
+                // yaw_pitch.set_rotation_quat(Quat::default());
 
-            // let t = Vec3::new(handle as f32, 0.0, 0.0);
-            // let camera = CameraRig::builder()
-            //     .with(Position::new(t))
-            //     .with(Rotation::new(Quat::default()))
-            //     .with(Smooth::new_position(1.25).predictive(true))
-            //     .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
-            //     .with(Smooth::new_position(2.5))
-            //     .with(yaw_pitch)
-            //     .with(
-            //         LookAt::new(t + Vec3::Y)
-            //             .tracking_smoothness(1.25)
-            //             .tracking_predictive(true),
-            //     )
-            //     .build();
+                // let t = Vec3::new(handle as f32, 0.0, 0.0);
+                // let camera = CameraRig::builder()
+                //     .with(Position::new(t))
+                //     .with(Rotation::new(Quat::default()))
+                //     .with(Smooth::new_position(1.25).predictive(true))
+                //     .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
+                //     .with(Smooth::new_position(2.5))
+                //     .with(yaw_pitch)
+                //     .with(
+                //         LookAt::new(t + Vec3::Y)
+                //             .tracking_smoothness(1.25)
+                //             .tracking_predictive(true),
+                //     )
+                //     .build();
 
-            // commands.spawn().insert(camera).insert(Rig);
+                // commands.spawn().insert(camera).insert(Rig);
 
-            // let t_cam = Vec3::new(handle as f32, 2.0, 5.0);
-            // commands
-            //     .spawn_bundle(Camera3dBundle {
-            //         transform: Transform {
-            //             translation: t_cam,
-            //             ..default()
-            //         },
-            //         ..Default::default()
-            //     })
-            //     .insert(UiCameraConfig {
-            //         //idk why not displaying
-            //         show_ui: true,
-            //         ..default()
-            //     })
-            //     .insert_bundle(PickingCameraBundle::default())
-            //     .insert(bevy_transform_gizmo::GizmoPickSource::default())
-            //     .insert(MainCamera);
+                // let t_cam = Vec3::new(handle as f32, 2.0, 5.0);
+                // commands
+                //     .spawn_bundle(Camera3dBundle {
+                //         transform: Transform {
+                //             translation: t_cam,
+                //             ..default()
+                //         },
+                //         ..Default::default()
+                //     })
+                //     .insert(UiCameraConfig {
+                //         //idk why not displaying
+                //         show_ui: true,
+                //         ..default()
+                //     })
+                //     .insert_bundle(PickingCameraBundle::default())
+                //     .insert(bevy_transform_gizmo::GizmoPickSource::default())
+                //     .insert(MainCamera);
 
-            // Directional 'sun' light.
-            commands.spawn_bundle(DirectionalLightBundle {
-                directional_light: DirectionalLight {
-                    illuminance: 32000.0,
+                // Directional 'sun' light.
+                commands.spawn_bundle(DirectionalLightBundle {
+                    directional_light: DirectionalLight {
+                        illuminance: 32000.0,
+                        ..default()
+                    },
+                    transform: Transform {
+                        translation: Vec3::new(0.0, 2.0, 0.0),
+                        rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4),
+                        ..default()
+                    },
                     ..default()
-                },
-                transform: Transform {
-                    translation: Vec3::new(0.0, 2.0, 0.0),
-                    rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4),
-                    ..default()
-                },
-                ..default()
-            });
+                });
 
-            // let window_id = WindowId::new();
+                // let window_id = WindowId::new();
 
-            // // sends out a "CreateWindow" event, which will be received by the windowing backend
-            // create_window_events.send(CreateWindow {
-            //     id: window_id,
-            //     descriptor: WindowDescriptor {
-            //         width: 800.,
-            //         height: 600.,
-            //         present_mode: PresentMode::AutoNoVsync,
-            //         title: "Second window".to_string(),
-            //         ..default()
-            //     },
-            // });
+                // // sends out a "CreateWindow" event, which will be received by the windowing backend
+                // create_window_events.send(CreateWindow {
+                //     id: window_id,
+                //     descriptor: WindowDescriptor {
+                //         width: 800.,
+                //         height: 600.,
+                //         present_mode: PresentMode::AutoNoVsync,
+                //         title: "Second window".to_string(),
+                //         ..default()
+                //     },
+                // });
 
-            // // second window camera
-            // commands.spawn_bundle(Camera3dBundle {
-            //     transform: Transform::from_xyz(6.0, 0.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
-            //     camera: Camera {
-            //         target: RenderTarget::Window(window_id),
-            //         ..default()
-            //     },
-            //     ..default()
-            // });
-
-
+                // // second window camera
+                // commands.spawn_bundle(Camera3dBundle {
+                //     transform: Transform::from_xyz(6.0, 0.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
+                //     camera: Camera {
+                //         target: RenderTarget::Window(window_id),
+                //         ..default()
+                //     },
+                //     ..default()
+                // });
+            }
         }
     }
-    println!("setup system");
 }
 
 #[derive(Component)]

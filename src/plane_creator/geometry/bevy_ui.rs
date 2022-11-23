@@ -10,8 +10,10 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::{collections::HashSet, sync::Arc};
 
-use crate::db::assets;
-use crate::{HEIGHT, WIDTH};
+use crate::components::comps;
+use crate::plane_creator::db::assets;
+pub const WIDTH: f32 = 1200.0;
+pub const HEIGHT: f32 = 800.0;
 
 #[derive(Default)]
 pub struct Images {
@@ -49,15 +51,25 @@ pub struct MyCollider;
 #[derive(Component)]
 pub struct MyAbilityCollider;
 
-pub fn configure_visuals(mut egui_ctx: ResMut<EguiContext>) {
-    egui_ctx.ctx_mut().set_visuals(egui::Visuals {
-        window_rounding: 0.0.into(),
-        ..Default::default()
-    });
+pub fn configure_visuals(
+    mut egui_ctx: ResMut<EguiContext>,
+    mut startups: Query<Entity, (With<comps::startup>, With<comps::PC_Comp>)>,
+) {
+    if startups.iter().len() == 0 {
+        egui_ctx.ctx_mut().set_visuals(egui::Visuals {
+            window_rounding: 0.0.into(),
+            ..Default::default()
+        });
+    }
 }
 
-pub fn configure_ui_state(mut ui_state: ResMut<UiState>) {
-    ui_state.is_window_open = true;
+pub fn configure_ui_state(
+    mut ui_state: ResMut<UiState>,
+    mut startups: Query<Entity, (With<comps::startup>, With<comps::PC_Comp>)>,
+) {
+    if startups.iter().len() == 0 {
+        ui_state.is_window_open = true;
+    }
 }
 
 pub fn ui_example(
@@ -71,20 +83,26 @@ pub fn ui_example(
     // You are not required to store Egui texture ids in systems. We store this one here just to
     // demonstrate that rendering by using a texture id of a removed image is handled without
     // making bevy_egui panic.
-    mut rendered_texture_ids: (Local<egui::TextureId>, Local<egui::TextureId>, Local<egui::TextureId>, Local<egui::TextureId>),
+    mut rendered_texture_ids: (
+        Local<egui::TextureId>,
+        Local<egui::TextureId>,
+        Local<egui::TextureId>,
+        Local<egui::TextureId>,
+    ),
     // mut rendered_texture_id: Local<egui::TextureId>,
     // mut rendered_texture_id2: Local<egui::TextureId>,
     // mut rendered_texture_id3: Local<egui::TextureId>,
-    // mut rendered_texture_id4: Local<egui::TextureId>, 
+    // mut rendered_texture_id4: Local<egui::TextureId>,
     mut is_initialized: Local<bool>,
     mut is_initialized2: Local<bool>,
-    mut is_initialized3: Local<bool>, 
+    mut is_initialized3: Local<bool>,
     // If you need to access the ids from multiple systems, you can also initialize the `Images`
     // resource while building the app and use `Res<Images>` instead.
     mut images: ResMut<Images>,
     asset_server: Res<AssetServer>,
     mut ability_collider: Query<&mut Transform, With<MyAbilityCollider>>,
 ) {
+    println!("in method");
     // World Builder
     *rendered_texture_ids.0 = egui_ctx.add_image(asset_server.load(&images.img1[..]));
     *rendered_texture_ids.1 = egui_ctx.add_image(asset_server.load(&images.img2[..]));
@@ -134,14 +152,13 @@ pub fn ui_example(
                         //println!("String {} {}", a, s);
                         if count == 0 {
                             images.img1 = s;
-                        } 
-                        else if count == 1 {
+                        } else if count == 1 {
                             images.img2 = s;
-                        } 
+                        }
                         // else if count == 2 {
                         //     images.img3 = s;
                         // }
-                         else {
+                        else {
                             break;
                         }
                         count += 1;
@@ -183,7 +200,7 @@ pub fn ui_example(
             // Spawn asset shown in image
             if response1.hovered() && !*is_initialized {
                 *is_initialized = true;
-               // println!("1 hovered");
+                // println!("1 hovered");
                 if let Some(index) = images.img1.find(".") {
                     let name = images.img1[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
@@ -203,7 +220,8 @@ pub fn ui_example(
                             transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
-                        .insert(CollidableEntity {assetID: name})
+                        .insert(comps::PC_Comp)
+                        .insert(CollidableEntity { assetID: name })
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
                         .insert(bevy_transform_gizmo::GizmoTransformable)
                         .with_children(|children| {
@@ -215,7 +233,8 @@ pub fn ui_example(
                                 },
                                 scene: player_handle.clone(),
                                 ..default()
-                            });
+                            })
+                            .insert(comps::PC_Comp);
                         })
                         // Physics
                         .with_children(|children| {
@@ -230,6 +249,7 @@ pub fn ui_example(
                                     transform: Transform::from_xyz(0.0, 0.0, 0.0),
                                     ..Default::default()
                                 })
+                                .insert(comps::PC_Comp)
                                 .insert(MyCollider)
                                 .insert_bundle(bevy_mod_picking::PickableBundle::default())
                                 .insert(bevy_transform_gizmo::GizmoTransformable)
@@ -241,7 +261,7 @@ pub fn ui_example(
             }
             if response2.hovered() && !*is_initialized2 {
                 *is_initialized2 = true;
-               // println!("2 hovered");
+                // println!("2 hovered");
                 if let Some(index) = images.img2.find(".") {
                     let name = images.img2[13..index].to_owned();
                     let path = format!("{}{}{}", "default_gltfs/", name, ".glb#Scene0");
@@ -260,7 +280,8 @@ pub fn ui_example(
                             transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
-                        .insert(CollidableEntity {assetID: name})
+                        .insert(comps::PC_Comp)
+                        .insert(CollidableEntity { assetID: name })
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
                         .insert(bevy_transform_gizmo::GizmoTransformable)
                         .with_children(|children| {
@@ -272,7 +293,8 @@ pub fn ui_example(
                                 },
                                 scene: player_handle.clone(),
                                 ..default()
-                            });
+                            })
+                            .insert(comps::PC_Comp);
                         })
                         // Physics
                         .with_children(|children| {
@@ -402,7 +424,10 @@ pub fn ui_example(
     egui::Window::new("Abilities Creator")
         .default_width(200.0)
         .default_height(HEIGHT - 60.0)
-        .default_pos(Pos2 { x: WIDTH - 270.0, y: 25.0 })
+        .default_pos(Pos2 {
+            x: WIDTH - 270.0,
+            y: 25.0,
+        })
         .vscroll(true)
         .show(&egui_ctx.ctx_mut().clone(), |ui| {
             ui.allocate_space(egui::Vec2::new(1.0, 10.0));
@@ -462,7 +487,8 @@ pub fn ui_example(
                             transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
-                        .insert(CollidableEntity {assetID: name})
+                        .insert(comps::PC_Comp)
+                        .insert(CollidableEntity { assetID: name })
                         .insert_bundle(bevy_mod_picking::PickableBundle::default())
                         .insert(bevy_transform_gizmo::GizmoTransformable)
                         .with_children(|children| {
@@ -474,7 +500,8 @@ pub fn ui_example(
                                 },
                                 scene: player_handle.clone(),
                                 ..default()
-                            });
+                            })
+                            .insert(comps::PC_Comp);
                         })
                         // Physics
                         .with_children(|children| {
@@ -489,6 +516,7 @@ pub fn ui_example(
                                     transform: Transform::from_xyz(0.0, 0.0, 0.0),
                                     ..Default::default()
                                 })
+                                .insert(comps::PC_Comp)
                                 .insert(MyAbilityCollider)
                                 .insert_bundle(bevy_mod_picking::PickableBundle::default())
                                 .insert(bevy_transform_gizmo::GizmoTransformable)
@@ -542,30 +570,30 @@ pub fn ui_example(
             });
         });
 
-    egui::TopBottomPanel::top("top_panel").show(egui_ctx.ctx_mut(), |ui| {
-        // The top panel is often a good place for a menu bar:
-        egui::menu::bar(ui, |ui| {
-            egui::menu::menu_button(ui, "File", |ui| {
-                if ui.button("Save").clicked() {
-                    std::process::exit(0);
-                }
-                if ui.button("Quit").clicked() {
-                    std::process::exit(0);
-                }
-            });
-            egui::menu::menu_button(ui, "Mode", |ui| {
-                if ui.button("World Builder").clicked() {
-                    std::process::exit(0);
-                }
-                if ui.button("Ability Creator").clicked() {
-                    std::process::exit(0);
-                }
-                if ui.button("Play").clicked() {
-                    std::process::exit(0);
-                }
-            });
-        });
-    });
+    // egui::TopBottomPanel::top("top_panel").show(egui_ctx.ctx_mut(), |ui| {
+    //     // The top panel is often a good place for a menu bar:
+    //     egui::menu::bar(ui, |ui| {
+    //         egui::menu::menu_button(ui, "File", |ui| {
+    //             if ui.button("Save").clicked() {
+    //                 std::process::exit(0);
+    //             }
+    //             if ui.button("Quit").clicked() {
+    //                 std::process::exit(0);
+    //             }
+    //         });
+    //         egui::menu::menu_button(ui, "Mode", |ui| {
+    //             if ui.button("World Builder").clicked() {
+    //                 std::process::exit(0);
+    //             }
+    //             if ui.button("Ability Creator").clicked() {
+    //                 std::process::exit(0);
+    //             }
+    //             if ui.button("Play").clicked() {
+    //                 std::process::exit(0);
+    //             }
+    //         });
+    //     });
+    // });
 }
 
 #[derive(Component)]
@@ -585,12 +613,14 @@ pub fn file_drop(mut dnd_evr: EventReader<FileDragAndDrop>) {
                 if let Some(old_path_as_str) = old_path.to_str() {
                     let mut split: Vec<&str> = old_path_as_str.split(".").collect();
                     if let Some(extension) = split.pop() {
-                        let mut v: Vec<&str> = old_path_as_str.split(&format!("{}{}", ".", "extension")[..]).collect();
-                        if let Some(rest) = v.pop(){
+                        let mut v: Vec<&str> = old_path_as_str
+                            .split(&format!("{}{}", ".", "extension")[..])
+                            .collect();
+                        if let Some(rest) = v.pop() {
                             let mut split2: Vec<&str> = rest.split("/").collect();
                             if let Some(name) = split2.pop() {
                                 let mut new_path = String::new();
-                                if extension == "glb"{
+                                if extension == "glb" {
                                     new_path = format!("{}{}", "./assets/default_gltfs/", name);
                                 }
                                 if extension == "png" || extension == "jpg" || extension == "jpeg" {
@@ -629,5 +659,5 @@ fn change_velocity(factor: f32) -> f32 {
     let res = factor.floor();
     //println!("factor {}, velocity: {:?}", factor, res);
     let change = (res + 1.0) * 10.0;
-    change 
+    change
 }

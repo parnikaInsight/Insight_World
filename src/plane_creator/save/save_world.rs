@@ -6,7 +6,7 @@ use std::path::Path;
 use serde_json::Deserializer;
 use serde::{Deserialize, Serialize};
 
-use crate::geometry::bevy_ui::{CollidableEntity, MyCollider};
+use crate::plane_creator::geometry::bevy_ui::{CollidableEntity, MyCollider};
 
 // TODO: Update only when "save" is pressed. 
 

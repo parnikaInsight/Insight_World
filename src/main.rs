@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use bevy::prelude::*;
+use bevy::{asset::AssetServerSettings, prelude::*, winit::WinitSettings};
 use bevy_dolly::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_ggrs::{GGRSPlugin, SessionType};
@@ -9,25 +9,30 @@ use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
 
 mod animation;
+mod colliders;
+mod components;
 mod default_world;
 mod ggrs_rollback;
+mod plane_creator;
 mod players;
 mod systems;
 mod worlds;
-mod colliders;
-mod components;
 //mod networks;
 
 use animation::{animation_helper, play};
+use colliders::collider;
 use default_world::{create_default, menu};
 use ggrs_rollback::{follow_camera, ggrs_camera, network};
+use plane_creator::{db::assets, geometry::{bevy_ui, my_plane}, save::save_world};
 use players::{info, movement, physics};
 use worlds::{create_insight, player};
-use colliders::collider;
 
 const FPS: usize = 60;
 const ROLLBACK_DEFAULT: &str = "rollback_default";
 const ROLLBACK_DEFAULT2: &str = "rollback_default2";
+pub const WIDTH: f32 = 1200.0;
+pub const HEIGHT: f32 = 800.0;
+
 // cargo run -- --local-port 7000 --players localhost 127.0.0.1:7001
 // cargo run -- --local-port 7001 --players 127.0.0.1:7000 localhost
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -73,25 +78,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .insert_resource(SessionType::P2PSession);
 
     //General Setup
-    
-    //Subapp
-    // app.add_plugins_with(DefaultPlugins, |group| {
-    //     group
-    //          .disable::<bevy::log::LogPlugin>()
-    //         .disable::<bevy::window::WindowPlugin>()
-    //         .disable::<bevy::winit::WinitPlugin>()
-    //         .disable::<bevy::core::CorePlugin>()
-    // });
-
     app.insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .insert_resource(WindowDescriptor {
             // This must come before default plugin.
-            width: 800.,
-            height: 800.,
+            // width: 800.,
+            // height: 800.,
+            width: WIDTH,
+            height: HEIGHT,
             title: "InsightWorld".to_owned(),
             ..Default::default()
         })
+        // AssetServerSettings must be inserted before adding the AssetPlugin or DefaultPlugins.
+        // Tell the asset server to watch for asset changes on disk:
+        .insert_resource(AssetServerSettings {
+            watch_for_changes: true,
+            ..default()
+        })
+        // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
+        .insert_resource(WinitSettings::desktop_app())
+        .insert_resource(bevy_ui::Images {
+            img1: "default_imgs/emu.png".to_owned(),
+            img2: "default_imgs/tiger.png".to_owned(),
+            img3: "default_imgs/eve.png".to_owned(),
+            img4: "default_imgs/fireball.png".to_owned(),
+        })
+        .init_resource::<bevy_ui::UiState>()
+        //.init_resource::<bevy_ui::Images>()
+        .init_resource::<bevy_ui::Tags>()
+        .init_resource::<assets::PlaneAssets>()
+        // Plugins
         .add_plugins(DefaultPlugins)
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(bevy_transform_gizmo::TransformGizmoPlugin::default())
@@ -104,36 +120,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Camera
     app.add_startup_system(ggrs_camera::setup_camera)
         .add_system(ggrs_camera::update_camera);
-
-    app.add_system_set(SystemSet::new()
-        .with_run_criteria(menu::get_plane_creator_state)
-        .with_system(create_default::despawn_meta.label("despawn"))
-        .with_system(create_default::create_default_plane.after("despawn"))
-    );
-    // app.add_system_set(SystemSet::new()
-    //     .with_run_criteria(menu::get_plane_creator_state)
-    //     .with_system(create_default::create_default_plane)
-    // );
-
     // // Follow Camera (uncomment in network.rs)
     // app.add_system(follow_camera::update_camera) //puts camera behind player
     //     .add_system(follow_camera::frame); //follows player
 
-    // Setup Players
-    app.add_startup_system(network::setup_system) // Start p2p session and add players.
-        .add_startup_system(play::setup_character); // Insert player animations.
-        //.add_system(animation_helper::setup_helpers); // Find AnimationHelperSetup markers for players.
-    app.add_system_set(SystemSet::new()
-        .with_run_criteria(menu::get_metaverse_state)
-        .with_system(create_default::despawn_pc.label("despawn"))
-        .with_system(animation_helper::setup_helpers.after("despawn"))
+    // Plane Creator
+    app.add_system_set(
+        SystemSet::new()
+            .with_run_criteria(menu::get_plane_creator_state)
+            .with_system(create_default::despawn_meta.label("despawn"))
+            //startup systems
+            //.with_system(create_default::create_default_plane.label("setup").after("despawn"))
+            .with_system(my_plane::setup_plane.label("setup").after("despawn"))
+            .with_system(assets::default_assets.label("default_assets").after("despawn"))
+            .with_system(bevy_ui::configure_visuals.label("config_visuals").after("despawn"))
+            .with_system(bevy_ui::configure_ui_state.label("config_ui_state").after("despawn"))
+            //systems
+            .with_system(bevy_ui::ui_example)
+            .with_system(bevy_ui::file_drop)
+            .with_system(save_world::save_scene)
+            .with_system(save_world::recreate_scene),
     );
 
-    // // Create default plane.
-    //app.add_startup_system(create_default::create_default_plane);
-    app.add_system(menu::ui_example);
+    // Metaverse
+    app.add_system_set(
+        SystemSet::new()
+            .with_run_criteria(menu::get_metaverse_state)
+            //startup systems
+            .with_system(create_default::despawn_pc.label("despawn"))
+            .with_system(
+                network::setup_system
+                    .label("network_setup")
+                    .after("despawn"),
+            ) // Start p2p session and add players.
+            .with_system(create_insight::create_insight_world.after("network_setup"))
+            .with_system(play::setup_character.after("network_setup")) // Insert player animations.
+            //systems
+            .with_system(animation_helper::setup_helpers.after("network_setup")), // Find AnimationHelperSetup markers for players.
+    );
 
-    app.add_startup_system(create_insight::create_insight_world);
+    // // Menu.
+    app.add_system(menu::ui_example);
 
     // Play stationary animations
     //  .add_system(play::play_scene);
@@ -146,5 +173,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
-
