@@ -2,7 +2,7 @@
 
 use bevy::prelude::*;
 use bevy_dolly::prelude::*;
-//use bevy_egui::EguiPlugin;
+use bevy_egui::EguiPlugin;
 use bevy_ggrs::{GGRSPlugin, SessionType};
 //use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_mod_picking::*;
@@ -18,7 +18,7 @@ mod colliders;
 //mod networks;
 
 use animation::{animation_helper, play};
-use default_world::create_default;
+use default_world::{create_default, menu};
 use ggrs_rollback::{follow_camera, ggrs_camera, network};
 use players::{info, movement, physics};
 use worlds::{create_insight, player};
@@ -80,6 +80,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_plugins(DefaultPickingPlugins)
         .add_plugin(bevy_transform_gizmo::TransformGizmoPlugin::default())
         .add_plugin(DollyCursorGrab)
+        .add_plugin(EguiPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(collider::ColliderBuilderPlugin::default());
@@ -98,7 +99,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_system(animation_helper::setup_helpers); // Find AnimationHelperSetup markers for players.
 
     // // Create default plane.
-    app.add_startup_system(create_default::create_default_plane);
+    app.add_startup_system(create_default::create_default_plane)
+    .add_system(menu::ui_example);
 
     app.add_startup_system(create_insight::create_insight_world);
 

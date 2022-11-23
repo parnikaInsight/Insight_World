@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use bevy_egui::{egui, EguiContext, EguiPlugin, EguiSettings};
 
 use crate::animation::play;
+use crate::default_world::menu;
+
 
 // Add stationary gltfs.
 pub fn create_default_plane(
@@ -10,6 +13,32 @@ pub fn create_default_plane(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ){
+
+    // gray cube
+    commands
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })), //PLANE_SIZE
+            material: materials.add(Color::rgb(0.5, 0.5, 0.5).into()),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            ..Default::default()
+        })
+        .insert(RigidBody::Fixed)
+        .insert(Collider::cuboid(0.5, 0.5, 0.5)) //half the cube size
+        .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+    // pink cube
+    commands
+    .spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })), //PLANE_SIZE
+        //material: materials.add(Color::rgb(0.5, 0.5, 0.5).into()),
+        transform: Transform::from_xyz(3.0, 0.0, 0.0),
+        ..Default::default()
+    })
+    .insert(RigidBody::Fixed)
+    .insert(Collider::cuboid(0.5, 0.5, 0.5)) //half the cube size
+    .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+
+
+    
     // // plane
     // commands
     //     .spawn_bundle(PbrBundle {
@@ -72,4 +101,5 @@ pub fn create_default_plane(
     //     scene: player_handle3.clone(),
     //     ..default()
     // });
+
 }
