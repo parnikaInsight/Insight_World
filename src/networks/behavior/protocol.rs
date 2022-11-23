@@ -4,6 +4,8 @@ use futures::select;
 use futures::AsyncBufReadExt;
 use futures::StreamExt;
 use libp2p::core::identity;
+use libp2p::multiaddr::Protocol;
+use std::net::Ipv4Addr;
 use libp2p::kad::record::store::MemoryStore;
 use libp2p::kad::{
     record::Key, AddProviderOk, GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent,
@@ -54,6 +56,24 @@ pub async fn process_swarm_events(
     let key_A_dst =
         identity::Keypair::from_protobuf_encoding(&peers::P1KEY).expect("Decoding Error");
     let id_A_dst = PeerId::from(key_A_dst.public());
+
+    let dst_addr_via_relay = Multiaddr::empty()
+            //.with(Protocol::Memory(40)) // Relay address. // "/ip4/147.75.87.27/tcp/4001
+            .with(Protocol::Ip4(Ipv4Addr::new(147, 75, 87, 27)))
+            .with(Protocol::Tcp(4001))
+            .with(Protocol::P2p(
+                PeerId::from_str("QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb")
+                    .unwrap()
+                    .into(),
+            )) // Relay peer id.
+            .with(Protocol::P2pCircuit) // Signal to connect via relay and not directly.
+            // .with(Protocol::P2p(
+            //     PeerId::from_str("QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa")
+            //         .unwrap()
+            //         .into(),
+            // )); // Destination peer id. (Peer A)
+            .with(Protocol::P2p(id_A_dst.into())); // Destination peer id. (Peer A)
+    swarm.dial(dst_addr_via_relay).unwrap();
 
     loop {
         select! {
@@ -121,7 +141,10 @@ pub async fn process_swarm_events(
                 SwarmEvent::ConnectionEstablished { peer_id, .. } if peer_id == relay_peer_id => {
                     println!("Relay Connection Established {:?}", relay_peer_id);
                 }
-                
+
+                SwarmEvent::Dialing(peer_id) if peer_id == id_A_dst => {
+                    println!("Dialing Dst {:?}", peer_id);
+                }
                 SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) if peer == id_A_dst => {
                     println!("Dst Ping {:?} {:?}", peer, result);
                 },
@@ -131,10 +154,10 @@ pub async fn process_swarm_events(
                 
 
                 SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqAccepted {relay_peer_id, renewal, limit})) => {
-                    println!("1 ReservationReqAccepted {:?}", relay_peer_id);
+                    println!("1 ReservationReqAccepted {:?} {}", relay_peer_id, renewal);
                 },
                 SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqFailed {relay_peer_id, renewal, error})) => {
-                    println!("2 ReservationReqFailed {:?}", relay_peer_id);
+                    println!("2 ReservationReqFailed {:?} {}", relay_peer_id, renewal);
                 },
                 SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::OutboundCircuitEstablished {relay_peer_id, limit})) => {
                     println!("3 OutboundCircuitEstablished {:?}", relay_peer_id);

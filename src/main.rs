@@ -84,13 +84,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(collider::ColliderBuilderPlugin::default());
 
-    // Camera
-    app.add_startup_system(ggrs_camera::setup_camera)
-        .add_system(ggrs_camera::update_camera);
+    // // Camera
+    // app.add_startup_system(ggrs_camera::setup_camera)
+    //     .add_system(ggrs_camera::update_camera);
 
-    // // Follow Camera (uncomment in network.rs)
-    // app.add_system(follow_camera::update_camera) //puts camera behind player
-    //     .add_system(follow_camera::frame); //follows player
+    // Follow Camera (uncomment in network.rs)
+    app.add_system(follow_camera::update_camera) //puts camera behind player
+        .add_system(follow_camera::frame); //follows player
 
     // Setup Players
     app.add_startup_system(network::setup_system) // Start p2p session and add players.
@@ -98,7 +98,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_system(animation_helper::setup_helpers); // Find AnimationHelperSetup markers for players.
 
     // // Create default plane.
-    // app.add_startup_system(create_default::create_default_plane);
+    app.add_startup_system(create_default::create_default_plane);
 
     app.add_startup_system(create_insight::create_insight_world);
 

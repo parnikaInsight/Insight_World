@@ -182,6 +182,16 @@ pub async fn create_swarm(
 
         // TODO: Receive connection request from A via relay
         // TODO: Accept connection request from A
+        // let relay_peer_id = PeerId::from_str("QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb")
+        // .unwrap()
+        // .into();
+        // let mut pool = LocalPool::new();
+        // pool.run_until(relay::wait_for_reservation(
+        //     &mut relay_client,
+        //     dst_addr_via_relay.clone(),
+        //     relay_peer_id,
+        //     false, // No renewal.
+        // ));
 
         // Create a dcutr behavior
         let dcutr = dcutr::behaviour::Behaviour::new();
