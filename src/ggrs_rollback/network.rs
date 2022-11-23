@@ -1,10 +1,14 @@
 use bevy::pbr::PbrBundle;
 use bevy::pbr::PointLightBundle;
 use bevy::pbr::StandardMaterial;
-use bevy::prelude::*;
 use bevy::render::color::Color;
 use bevy::render::mesh::shape;
 use bevy::render::mesh::Mesh;
+use bevy::{
+    prelude::*,
+    render::camera::RenderTarget,
+    window::{CreateWindow, PresentMode, WindowId},
+};
 use bevy_dolly::prelude::*;
 use bevy_ggrs::{Rollback, RollbackIdProvider};
 use bevy_mod_picking::*;
@@ -20,7 +24,7 @@ use std::net::SocketAddr;
 use crate::animation::animation_helper;
 use crate::players::{info, movement};
 use crate::worlds::world_manager;
-
+use crate::components::comps;
 
 const CUBE_SIZE: f32 = 0.2;
 const BLUE: Color = Color::rgb(0.8, 0.6, 0.2);
@@ -38,6 +42,7 @@ pub fn setup_system(
     p2p_session: Option<Res<P2PSession<GGRSConfig>>>,
     synctest_session: Option<Res<SyncTestSession<GGRSConfig>>>,
     spectator_session: Option<Res<SpectatorSession<GGRSConfig>>>,
+    mut create_window_events: EventWriter<CreateWindow>,
 ) {
     //start creating p2p session
     let num_players = p2p_session
@@ -71,7 +76,8 @@ pub fn setup_system(
                 scene: player_handle.clone(),
                 ..default()
             })
-            
+            .insert(comps::Meta_Comp)
+            .insert(comps::startup)
             // Add player information.
             .insert(info::Player {
                 handle: handle as u32,
@@ -91,7 +97,6 @@ pub fn setup_system(
             .insert_bundle(PickableBundle::default()) // Player can be clicked.
             // Indicates bevy_GGRS that this entity should be saved and loaded.
             .insert(Rollback::new(rip.next_id()))
-            
             // Physics
             .insert(LockedAxes::ROTATION_LOCKED)
             .insert(RigidBody::Dynamic)
@@ -103,7 +108,6 @@ pub fn setup_system(
                     .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)));
             })
             .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
-            
             // Animation Helper
             .insert(animation_helper::AnimationHelperSetup)
             .id();
@@ -113,44 +117,44 @@ pub fn setup_system(
         if q == handle {
             commands.entity(entity_id).insert(Me);
 
-            // Follow camera
-            let mut yaw_pitch = YawPitch::new();
-            yaw_pitch.set_rotation_quat(Quat::default());
-            
-            let t = Vec3::new(handle as f32, 0.0, 0.0);
-            let camera = CameraRig::builder()
-                .with(Position::new(t))
-                .with(Rotation::new(Quat::default()))
-                .with(Smooth::new_position(1.25).predictive(true))
-                .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
-                .with(Smooth::new_position(2.5))
-                .with(yaw_pitch)
-                .with(
-                    LookAt::new(t + Vec3::Y)
-                        .tracking_smoothness(1.25)
-                        .tracking_predictive(true),
-                )
-                .build();
+            // // Follow camera
+            // let mut yaw_pitch = YawPitch::new();
+            // yaw_pitch.set_rotation_quat(Quat::default());
 
-            commands.spawn().insert(camera).insert(Rig);
+            // let t = Vec3::new(handle as f32, 0.0, 0.0);
+            // let camera = CameraRig::builder()
+            //     .with(Position::new(t))
+            //     .with(Rotation::new(Quat::default()))
+            //     .with(Smooth::new_position(1.25).predictive(true))
+            //     .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
+            //     .with(Smooth::new_position(2.5))
+            //     .with(yaw_pitch)
+            //     .with(
+            //         LookAt::new(t + Vec3::Y)
+            //             .tracking_smoothness(1.25)
+            //             .tracking_predictive(true),
+            //     )
+            //     .build();
 
-            let t_cam = Vec3::new(handle as f32, 2.0, 5.0);
-            commands
-                .spawn_bundle(Camera3dBundle {
-                    transform: Transform {
-                        translation: t_cam,
-                        ..default()
-                    },
-                    ..Default::default()
-                })
-                .insert(UiCameraConfig {
-                    //idk why not displaying
-                    show_ui: true,
-                    ..default()
-                })
-                .insert_bundle(PickingCameraBundle::default())
-                .insert(bevy_transform_gizmo::GizmoPickSource::default())
-                .insert(MainCamera);
+            // commands.spawn().insert(camera).insert(Rig);
+
+            // let t_cam = Vec3::new(handle as f32, 2.0, 5.0);
+            // commands
+            //     .spawn_bundle(Camera3dBundle {
+            //         transform: Transform {
+            //             translation: t_cam,
+            //             ..default()
+            //         },
+            //         ..Default::default()
+            //     })
+            //     .insert(UiCameraConfig {
+            //         //idk why not displaying
+            //         show_ui: true,
+            //         ..default()
+            //     })
+            //     .insert_bundle(PickingCameraBundle::default())
+            //     .insert(bevy_transform_gizmo::GizmoPickSource::default())
+            //     .insert(MainCamera);
 
             // Directional 'sun' light.
             commands.spawn_bundle(DirectionalLightBundle {
@@ -165,6 +169,32 @@ pub fn setup_system(
                 },
                 ..default()
             });
+
+            // let window_id = WindowId::new();
+
+            // // sends out a "CreateWindow" event, which will be received by the windowing backend
+            // create_window_events.send(CreateWindow {
+            //     id: window_id,
+            //     descriptor: WindowDescriptor {
+            //         width: 800.,
+            //         height: 600.,
+            //         present_mode: PresentMode::AutoNoVsync,
+            //         title: "Second window".to_string(),
+            //         ..default()
+            //     },
+            // });
+
+            // // second window camera
+            // commands.spawn_bundle(Camera3dBundle {
+            //     transform: Transform::from_xyz(6.0, 0.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
+            //     camera: Camera {
+            //         target: RenderTarget::Window(window_id),
+            //         ..default()
+            //     },
+            //     ..default()
+            // });
+
+
         }
     }
     println!("setup system");

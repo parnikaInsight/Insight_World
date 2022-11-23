@@ -14,7 +14,7 @@ pub fn frame(
     mut me: Query<(&mut Transform, &info::Player, &network::Me), With<Rollback>>,
 ) {
     let (mut t, p, m) = me.single_mut();
-    println!("Me: {:?}", t);
+    //println!("Me: {:?}", t);
     let (mut camera, rig) = q.single_mut();
     camera.driver_mut::<Position>().translation = t.translation;
     camera.driver_mut::<Rotation>().rotation = t.rotation;

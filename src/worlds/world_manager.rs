@@ -3,6 +3,7 @@ use bevy::utils::hashbrown::HashMap;
 use bevy_rapier3d::prelude::*;
 
 use crate::colliders::collider;
+use crate::components::comps;
 
 #[derive(Debug)]
 // IWorlds are relatively adjacent and grow in a spiral (TODO)
@@ -147,6 +148,8 @@ impl IWorld {
                     transform: trans,
                     ..Default::default()
                 })
+                .insert(comps::Meta_Comp)
+                .insert(comps::startup)
                 .insert(RigidBody::Fixed)
                 //half the cube size
                 .insert(Collider::cuboid(7.5, 0.0, 7.5))
@@ -158,7 +161,8 @@ impl IWorld {
             commands.spawn_bundle(PointLightBundle {
                 transform: Transform::from_xyz(4.0, 18.0, 14.0),
                 ..Default::default()
-            });
+            })
+            .insert(comps::startup);
             index += 1.0;
         }
         self.get_boundary(commands, meshes, materials);

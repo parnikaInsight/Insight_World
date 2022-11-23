@@ -15,6 +15,7 @@ mod players;
 mod systems;
 mod worlds;
 mod colliders;
+mod components;
 //mod networks;
 
 use animation::{animation_helper, play};
@@ -30,13 +31,18 @@ const ROLLBACK_DEFAULT2: &str = "rollback_default2";
 // cargo run -- --local-port 7000 --players localhost 127.0.0.1:7001
 // cargo run -- --local-port 7001 --players 127.0.0.1:7000 localhost
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut app = App::new();
+    app.init_resource::<menu::PlaneCreatorState>();
+    app.add_startup_system(menu::configure_plane_creator_state);
+    app.init_resource::<menu::MetaverseState>();
+    app.add_startup_system(menu::configure_metaverse_state);
+
     // Create a GGRS session.
     let sess_build = network::create_ggrs_session().unwrap();
 
     // Start the GGRS session.
     let sess = network::start_ggrs_session(sess_build).unwrap();
 
-    let mut app = App::new();
     // GGRS Configuration
     GGRSPlugin::<network::GGRSConfig>::new()
         // Define frequency of rollback game logic update.
@@ -67,6 +73,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .insert_resource(SessionType::P2PSession);
 
     //General Setup
+    
+    //Subapp
+    // app.add_plugins_with(DefaultPlugins, |group| {
+    //     group
+    //          .disable::<bevy::log::LogPlugin>()
+    //         .disable::<bevy::window::WindowPlugin>()
+    //         .disable::<bevy::winit::WinitPlugin>()
+    //         .disable::<bevy::core::CorePlugin>()
+    // });
+
     app.insert_resource(Msaa { samples: 4 })
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .insert_resource(WindowDescriptor {
@@ -85,22 +101,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(collider::ColliderBuilderPlugin::default());
 
-    // // Camera
-    // app.add_startup_system(ggrs_camera::setup_camera)
-    //     .add_system(ggrs_camera::update_camera);
+    // Camera
+    app.add_startup_system(ggrs_camera::setup_camera)
+        .add_system(ggrs_camera::update_camera);
 
-    // Follow Camera (uncomment in network.rs)
-    app.add_system(follow_camera::update_camera) //puts camera behind player
-        .add_system(follow_camera::frame); //follows player
+    app.add_system_set(SystemSet::new()
+        .with_run_criteria(menu::get_plane_creator_state)
+        .with_system(create_default::despawn_meta.label("despawn"))
+        .with_system(create_default::create_default_plane.after("despawn"))
+    );
+    // app.add_system_set(SystemSet::new()
+    //     .with_run_criteria(menu::get_plane_creator_state)
+    //     .with_system(create_default::create_default_plane)
+    // );
+
+    // // Follow Camera (uncomment in network.rs)
+    // app.add_system(follow_camera::update_camera) //puts camera behind player
+    //     .add_system(follow_camera::frame); //follows player
 
     // Setup Players
     app.add_startup_system(network::setup_system) // Start p2p session and add players.
-        .add_startup_system(play::setup_character) // Insert player animations.
-        .add_system(animation_helper::setup_helpers); // Find AnimationHelperSetup markers for players.
+        .add_startup_system(play::setup_character); // Insert player animations.
+        //.add_system(animation_helper::setup_helpers); // Find AnimationHelperSetup markers for players.
+    app.add_system_set(SystemSet::new()
+        .with_run_criteria(menu::get_metaverse_state)
+        .with_system(create_default::despawn_pc.label("despawn"))
+        .with_system(animation_helper::setup_helpers.after("despawn"))
+    );
 
     // // Create default plane.
-    app.add_startup_system(create_default::create_default_plane)
-    .add_system(menu::ui_example);
+    //app.add_startup_system(create_default::create_default_plane);
+    app.add_system(menu::ui_example);
 
     app.add_startup_system(create_insight::create_insight_world);
 
@@ -115,3 +146,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+
