@@ -1,5 +1,8 @@
 #![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
 
+use bevy::ecs::system::Resource;
 use bevy::{asset::AssetServerSettings, prelude::*, winit::WinitSettings};
 use bevy_dolly::prelude::*;
 use bevy_egui::EguiPlugin;
@@ -9,6 +12,7 @@ use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
 use async_std::task;
 use futures::StreamExt;
+use futures::channel::mpsc::Receiver;
 use libp2p::kad::record::store::MemoryStore;
 use libp2p::kad::{GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent, QueryResult};
 use libp2p::{
@@ -16,9 +20,10 @@ use libp2p::{
     swarm::{Swarm, SwarmEvent},
     Multiaddr, PeerId,
 };
+use serde::__private::de;
 use std::{env, thread, error::Error, str::FromStr, time::Duration};
 use futures::executor::block_on;
-use crossbeam_channel::unbounded;
+use crossbeam_channel::{unbounded, Sender};
 
 mod networks;
 mod animation;
@@ -51,6 +56,22 @@ pub const HEIGHT: f32 = 800.0;
 
 // cargo run -- --local-port 7000 --players localhost 127.0.0.1:7001
 // cargo run -- --local-port 7001 --players 127.0.0.1:7000 localhost
+
+//#[derive(Default)]
+pub struct GameSender {
+    pub game_sender: Sender<String>,
+}
+
+impl FromWorld for GameSender {
+    fn from_world(world: &mut World) -> Self{
+        let (game_sender, _) = unbounded::<String>();
+        GameSender{
+            game_sender,
+        }
+    }
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let query:u32 = args[1].parse().unwrap();
@@ -63,14 +84,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     //Crossbeam channel set up
     let (networks_sender, game_receiver) = unbounded::<String>();
-    let (_game_sender, networks_receiver) = unbounded::<String>();
+    let (game_sender, networks_receiver) = unbounded::<String>();
     // let my_future =
     //     protocol::core::into_protocol(private, peerid, backend_sender, backend_reciever);
 
-    let my_future = protocol::process_swarm_events(local_key.clone(), local_peer_id, networks_sender);
+    let my_future = protocol::process_swarm_events(local_key.clone(), local_peer_id, networks_sender, networks_receiver);
     thread::spawn(move || block_on(my_future).expect("Thread Spawn Error"));
 
     let mut app = App::new(); //.add_plugins(DefaultPlugins).run();
+    //app.init_resource::<GameSender>();
+    app.insert_resource(GameSender{game_sender});
     app.init_resource::<menu::PlaneCreatorState>();
     app.add_startup_system(menu::configure_plane_creator_state);
     app.init_resource::<menu::MetaverseState>();
@@ -173,9 +196,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .with_system(bevy_ui::configure_ui_state.label("config_ui_state").after("despawn"))
             //systems
             .with_system(bevy_ui::ui_example)
-            .with_system(bevy_ui::file_drop)
-            .with_system(save_world::save_scene)
-            .with_system(save_world::recreate_scene),
+            .with_system(bevy_ui::file_drop),
+            //.with_system(save_world::save_scene)
+            //.with_system(save_world::recreate_scene),
     );
 
     // Metaverse

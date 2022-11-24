@@ -1,5 +1,6 @@
 use async_std::io;
 use bevy::prelude::*;
+use crossbeam_channel::Receiver;
 use crossbeam_channel::Sender;
 use futures::select;
 use futures::AsyncBufReadExt;
@@ -33,6 +34,7 @@ pub async fn process_swarm_events(
     local_key: identity::Keypair,
     local_peer_id: PeerId,
     networks_sender: Sender<String>,
+    networks_receiver: Receiver<String>,
 ) -> Result<(), Box<dyn Error>> {
 
     let mut swarm = swarm::create_swarm(local_key, local_peer_id).await?;
@@ -82,7 +84,7 @@ pub async fn process_swarm_events(
 
     loop {
         select! {
-            line = stdin.select_next_some() => kademlia::handle_input_line(&mut swarm.behaviour_mut().kademlia, line.expect("Stdin not to close")),
+            line = stdin.select_next_some() => kademlia::handle_input_line(&mut swarm.behaviour_mut().kademlia, line.expect("Stdin not to close"), networks_receiver.clone()),
             event = swarm.select_next_some() =>
             match event {
 
@@ -100,12 +102,12 @@ pub async fn process_swarm_events(
                     }
                 }
 
-                // // Kademlia (needs mdns)
-                // SwarmEvent::Behaviour(my_behavior::Event::Kademlia(
-                //     KademliaEvent::OutboundQueryCompleted { result, ..},
-                // )) => {
-                //     kademlia::kademlia_query_results(result);
-                // },
+                // Kademlia (needs mdns)
+                SwarmEvent::Behaviour(my_behavior::Event::Kademlia(
+                    KademliaEvent::OutboundQueryCompleted { result, ..},
+                )) => {
+                    kademlia::kademlia_query_results(result);
+                },
 
                 // Identify (dial multiaddress)
                 SwarmEvent::NewListenAddr { address, .. } => {

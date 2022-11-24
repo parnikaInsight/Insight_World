@@ -27,6 +27,7 @@
 
 use async_std::task;
 use bevy::prelude::*;
+use crossbeam_channel::Receiver;
 use futures::StreamExt;
 use libp2p::core::either::EitherError;
 use libp2p::core::identity::Keypair;
@@ -216,8 +217,21 @@ pub fn kademlia_query_results(result: QueryResult) {
     };
 }
 
-pub fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String) {
+pub fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String, networks_receiver: Receiver<String>,) {
     let mut args = line.split(' ');
+
+    let res = networks_receiver.recv();
+    match res {
+        Ok(string) => {
+            if string == "PUBLISH" {  // only works if GET_PROVIDERS is typed soon after publishing--must be polling for metaverse updates automatically
+                println!("publisheeeed");
+                kademlia
+                .start_providing(Key::new(&String::from("experiment_world")))
+                .expect("Failed to start providing key");
+            }
+        }, 
+        _ => (),
+    }
 
     match args.next() {
         Some("GET") => {

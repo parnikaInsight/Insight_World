@@ -9,6 +9,8 @@ use bevy_rapier3d::prelude::*;
 use egui::Response;
 use emath::Pos2;
 use futures::select;
+use libp2p::kad::Kademlia;
+use libp2p::kad::store::MemoryStore;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -21,6 +23,10 @@ use futures::executor::block_on;
 use std::thread;
 use bevy::app::AppExit;
 use bevy::ecs::schedule::ShouldRun;
+
+use crate::GameSender;
+use crate::plane_creator::geometry::bevy_ui::CollidableEntity;
+use crate::plane_creator::save::save_world;
 
 use super::create_default;
 
@@ -67,7 +73,10 @@ pub fn ui_example(
     mut egui_ctx: ResMut<EguiContext>,
     mut exit: EventWriter<AppExit>,
     mut p_state: ResMut<PlaneCreatorState>,
-    mut m_state: ResMut<MetaverseState>
+    mut m_state: ResMut<MetaverseState>,
+    assets: Query<(&mut Transform, &CollidableEntity)>,
+    game_send: ResMut<GameSender>
+    //kademlia: &mut Kademlia<MemoryStore>,
 ) {
     egui::TopBottomPanel::top("top_panel").show(egui_ctx.ctx_mut(), |ui| {
         // The top panel is often a good place for a menu bar:
@@ -119,6 +128,19 @@ pub fn ui_example(
                     p_state.bool = false;
                     m_state.bool = true;
                     println!("starte: {}", p_state.bool);
+                }
+            });
+            egui::menu::menu_button(ui, "Creator", |ui| {
+                if ui.button("Save").clicked() {
+                    save_world::save_scene(assets);
+                    println!("saved");
+                    //std::process::exit(0);
+                }
+                if ui.button("Publish").clicked() {
+                    //save_world::publish_scene(kademlia);
+                    game_send.game_sender.send(String::from("PUBLISH"));
+                    println!("you are now a provider for your creation");
+                    //std::process::exit(0);
                 }
             });
         });
