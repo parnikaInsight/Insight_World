@@ -27,25 +27,31 @@
 
 use async_std::task;
 use bevy::prelude::*;
-use crossbeam_channel::Receiver;
+use crossbeam_channel::{Receiver, Sender};
 use futures::StreamExt;
 use libp2p::core::either::EitherError;
 use libp2p::core::identity::Keypair;
+use libp2p::gossipsub::subscription_filter::AllowAllSubscriptionFilter;
+use libp2p::gossipsub::{Gossipsub, IdentityTransform, IdentTopic as Topic};
 use libp2p::kad::record::store::MemoryStore;
 use libp2p::kad::{
     record::Key, AddProviderOk, GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent,
     PeerRecord, PutRecordOk, QueryResult, Quorum, Record,
 };
+use libp2p::multihash::IdentityHasher;
 use libp2p::{
     development_transport, identity,
     swarm::{Swarm, SwarmEvent},
     Multiaddr, PeerId,
 };
+use std::collections::hash_map::DefaultHasher;
 use std::{env, error::Error, str::FromStr, thread, time::Duration};
 use void::Void;
 
 use crate::networks::behavior::my_behavior;
 use crate::networks::connection::swarm;
+
+use super::my_behavior::MyBehavior;
 
 pub async fn kademlia(local_key: Keypair, local_peer_id: PeerId) -> Result<(), Box<dyn Error>> {
     let mut swarm = swarm::create_swarm(local_key, local_peer_id).await?;
@@ -217,19 +223,33 @@ pub fn kademlia_query_results(result: QueryResult) {
     };
 }
 
-pub fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String, networks_receiver: Receiver<String>,) {
+pub fn handle_input_line(
+    // kademlia: &mut Kademlia<MemoryStore>,
+    // gossipsub: &mut Gossipsub<IdentityTransform, AllowAllSubscriptionFilter>,
+    swarm: &mut MyBehavior,
+    //topic: Topic, 
+    line: String,
+    networks_sender: Sender<String>,
+    networks_receiver: Receiver<String>,
+) {
     let mut args = line.split(' ');
 
     let res = networks_receiver.recv();
     match res {
         Ok(string) => {
-            if string == "PUBLISH" {  // only works if GET_PROVIDERS is typed soon after publishing--must be polling for metaverse updates automatically
+            if string == "PUBLISH" {
+                // only works if GET_PROVIDERS is typed soon after publishing--must be polling for metaverse updates automatically
                 println!("publisheeeed");
-                kademlia
-                .start_providing(Key::new(&String::from("experiment_world")))
-                .expect("Failed to start providing key");
+                swarm.kademlia
+                    .start_providing(Key::new(&String::from("experiment_world")))
+                    .expect("Failed to start providing key");
+                // Send notification to gamers about having published a metaverse update
+                // if let Err(e) = swarm.gossipsub.publish(topic, "experiment_world published") {
+                //     println!("Publish error: {:?}", e);
+                // }
+                //WRONG- networks_sender.send(String::from("NOW_PROV"));
             }
-        }, 
+        }
         _ => (),
     }
 
@@ -244,7 +264,7 @@ pub fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String, net
                     }
                 }
             };
-            kademlia.get_record(key, Quorum::One);
+            swarm.kademlia.get_record(key, Quorum::One);
         }
         Some("GET_PROVIDERS") => {
             let key = {
@@ -256,7 +276,7 @@ pub fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String, net
                     }
                 }
             };
-            kademlia.get_providers(key);
+            swarm.kademlia.get_providers(key);
         }
         Some("PUT") => {
             let key = {
@@ -283,7 +303,7 @@ pub fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String, net
                 publisher: None,
                 expires: None,
             };
-            kademlia
+            swarm. kademlia
                 .put_record(record, Quorum::One)
                 .expect("Failed to store record locally.");
         }
@@ -298,7 +318,7 @@ pub fn handle_input_line(kademlia: &mut Kademlia<MemoryStore>, line: String, net
                 }
             };
 
-            kademlia
+            swarm.kademlia
                 .start_providing(key)
                 .expect("Failed to start providing key");
         }

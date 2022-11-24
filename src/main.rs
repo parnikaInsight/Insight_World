@@ -12,7 +12,6 @@ use bevy_mod_picking::*;
 use bevy_rapier3d::prelude::*;
 use async_std::task;
 use futures::StreamExt;
-use futures::channel::mpsc::Receiver;
 use libp2p::kad::record::store::MemoryStore;
 use libp2p::kad::{GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent, QueryResult};
 use libp2p::{
@@ -23,7 +22,7 @@ use libp2p::{
 use serde::__private::de;
 use std::{env, thread, error::Error, str::FromStr, time::Duration};
 use futures::executor::block_on;
-use crossbeam_channel::{unbounded, Sender};
+use crossbeam_channel::{unbounded, Sender, Receiver};
 
 mod networks;
 mod animation;
@@ -71,6 +70,19 @@ impl FromWorld for GameSender {
     }
 }
 
+pub struct GameReceiver {
+    pub game_receiver: Receiver<String>,
+}
+
+impl FromWorld for GameReceiver {
+    fn from_world(world: &mut World) -> Self{
+        let (_, game_receiver) = unbounded::<String>();
+        GameReceiver{
+            game_receiver,
+        }
+    }
+}
+
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
@@ -94,10 +106,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut app = App::new(); //.add_plugins(DefaultPlugins).run();
     //app.init_resource::<GameSender>();
     app.insert_resource(GameSender{game_sender});
+    app.insert_resource(GameReceiver{game_receiver: game_receiver.clone()});
     app.init_resource::<menu::PlaneCreatorState>();
     app.add_startup_system(menu::configure_plane_creator_state);
     app.init_resource::<menu::MetaverseState>();
     app.add_startup_system(menu::configure_metaverse_state);
+    //app.insert_resource(menu::MetaverseUpdate{update: 0});
 
     let port = network::get_port(game_receiver.clone());
 
@@ -115,6 +129,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_input_system(movement::input)
         // Register types of components and resources you want to be rolled back.
         .register_rollback_type::<Transform>()
+       // .register_rollback_type::<menu::MetaverseUpdate>()
         //.register_rollback_type::<info::Velocity>()
         // These systems will be executed as part of the advance frame update.
         .with_rollback_schedule(
@@ -220,6 +235,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // // Menu.
     app.add_system(menu::ui_example);
+   // app.add_system(menu::push_notif);
+    //app.add_system(menu::check_res_changed);
 
     // Play stationary animations
     //  .add_system(play::play_scene);

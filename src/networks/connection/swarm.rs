@@ -4,6 +4,7 @@ use futures::StreamExt;
 use libp2p::core::identity::Keypair;
 use libp2p::core::muxing::StreamMuxerBox;
 use libp2p::core::transport::{Boxed, OrTransport};
+use libp2p::gossipsub::{self, GossipsubMessage, MessageAuthenticity, MessageId, ValidationMode};
 use libp2p::kad::record::store::MemoryStore;
 use libp2p::kad::{GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent, QueryResult};
 use libp2p::multiaddr::Protocol;
@@ -27,12 +28,14 @@ use libp2p::{
     swarm::{Swarm, SwarmEvent},
     Multiaddr,
 };
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use std::net::Ipv4Addr;
 use std::{env, error::Error, str::FromStr, thread, time::Duration};
 
 use crate::networks::behavior::my_behavior::MyBehavior;
-use crate::networks::connection::peers;
 use crate::networks::behavior::relay;
+use crate::networks::connection::peers;
 
 const BOOTNODES: [&str; 4] = [
     "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
@@ -145,7 +148,8 @@ pub async fn create_swarm(
         // I am Peer B
 
         // Establish relayed connections by dialing /p2p-circuit addresses.
-        let key_A = identity::Keypair::from_protobuf_encoding(&peers::P1KEY).expect("Decoding Error");
+        let key_A =
+            identity::Keypair::from_protobuf_encoding(&peers::P1KEY).expect("Decoding Error");
         let id_A = PeerId::from(key_A.public());
         let dst_addr_via_relay = Multiaddr::empty()
             //.with(Protocol::Memory(40)) // Relay address. // "/ip4/147.75.87.27/tcp/4001
@@ -197,6 +201,27 @@ pub async fn create_swarm(
         let dcutr = dcutr::behaviour::Behaviour::new();
         // TODO: A and B must coordinate dial
 
+        // // Gossipsub
+        // // To content-address message, we can take the hash of message and use it as an ID.
+        // let message_id_fn = |message: &GossipsubMessage| {
+        //     let mut s = DefaultHasher::new();
+        //     message.data.hash(&mut s);
+        //     MessageId::from(s.finish().to_string())
+        // };
+
+        // // Set a custom gossipsub configuration
+        // let gossipsub_config = gossipsub::GossipsubConfigBuilder::default()
+        //     .heartbeat_interval(Duration::from_secs(10)) // This is set to aid debugging by not cluttering the log space
+        //     .validation_mode(ValidationMode::Strict) // This sets the kind of message validation. The default is Strict (enforce message signing)
+        //     .message_id_fn(message_id_fn) // content-address messages. No two messages of the same content will be propagated.
+        //     .build()
+        //     .expect("Valid config");
+
+        // // build a gossipsub network behaviour
+        // let mut gossipsub =
+        //     Gossipsub::new(MessageAuthenticity::Signed(local_key), gossipsub_config)
+        //         .expect("Correct configuration");
+
         let behaviour = MyBehavior {
             kademlia,
             identify,
@@ -204,7 +229,8 @@ pub async fn create_swarm(
             ping,
             autonat,
             relay: relay_client,
-            dcutr
+            dcutr,
+            //gossipsub,
         };
 
         Swarm::new(transport, behaviour, local_peer_id)

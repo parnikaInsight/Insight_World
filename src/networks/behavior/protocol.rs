@@ -6,14 +6,15 @@ use futures::select;
 use futures::AsyncBufReadExt;
 use futures::StreamExt;
 use libp2p::core::identity;
-use libp2p::multiaddr::Protocol;
-use std::net::Ipv4Addr;
-use std::str::from_utf8;
+use libp2p::gossipsub::GossipsubEvent;
+use libp2p::gossipsub::IdentTopic as Topic;
 use libp2p::kad::record::store::MemoryStore;
 use libp2p::kad::{
     record::Key, AddProviderOk, GetClosestPeersError, Kademlia, KademliaConfig, KademliaEvent,
     PeerRecord, PutRecordOk, QueryResult, Quorum, Record,
 };
+use libp2p::multiaddr::Protocol;
+use libp2p::multihash::IdentityHasher;
 use libp2p::{
     autonat, dcutr, development_transport, identify,
     mdns::{Mdns, MdnsConfig, MdnsEvent},
@@ -22,6 +23,9 @@ use libp2p::{
     swarm::{Swarm, SwarmEvent},
     Multiaddr, PeerId,
 };
+use std::net::Ipv4Addr;
+use std::str::from_utf8;
+use std::time;
 use std::{env, error::Error, str::FromStr, thread, time::Duration};
 
 use crate::networks::behavior::{kademlia, my_behavior};
@@ -36,7 +40,6 @@ pub async fn process_swarm_events(
     networks_sender: Sender<String>,
     networks_receiver: Receiver<String>,
 ) -> Result<(), Box<dyn Error>> {
-
     let mut swarm = swarm::create_swarm(local_key, local_peer_id).await?;
 
     swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
@@ -82,132 +85,155 @@ pub async fn process_swarm_events(
     //         .with(Protocol::P2p(id_A_dst.into())); // Destination peer id. (Peer A)
     // swarm.dial(dst_addr_via_relay).unwrap();
 
+    // // Create a Gossipsub topic
+    // let topic = Topic::new("test-net");
+
+    // // subscribes to our topic
+    // swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
+
     loop {
         select! {
-            line = stdin.select_next_some() => kademlia::handle_input_line(&mut swarm.behaviour_mut().kademlia, line.expect("Stdin not to close"), networks_receiver.clone()),
-            event = swarm.select_next_some() =>
-            match event {
+                    //line = stdin.select_next_some() => kademlia::handle_input_line(&mut swarm.behaviour_mut(), topic.clone(), line.expect("Stdin not to close"),networks_sender.clone(), networks_receiver.clone()),
+                    line = stdin.select_next_some() => kademlia::handle_input_line(&mut swarm.behaviour_mut(), line.expect("Stdin not to close"),networks_sender.clone(), networks_receiver.clone()),
+                    //^add swarm.behaviour_mut().gossipsub to publish metaverse update
+                    event = swarm.select_next_some() =>
+                    match event {
 
-                // Mdns
-                SwarmEvent::Behaviour(my_behavior::Event::Mdns(MdnsEvent::Discovered(peers))) => {
-                    for (peer_id, addr) in peers {
-                        println!("discovered {} {}", peer_id, addr);
-                        networks_sender.send(format!("1/{}", get_ip_addr(addr.to_string())));
-                        swarm.behaviour_mut().kademlia.add_address(&peer_id, addr);
+                        // Mdns
+                        SwarmEvent::Behaviour(my_behavior::Event::Mdns(MdnsEvent::Discovered(peers))) => {
+                            for (peer_id, addr) in peers {
+                                println!("discovered {} {}", peer_id, addr);
+                                networks_sender.send(format!("1/{}", get_ip_addr(addr.to_string())));
+                        
+                                swarm.behaviour_mut().kademlia.add_address(&peer_id, addr);
+                            }
+                        }
+                        SwarmEvent::Behaviour(my_behavior::Event::Mdns(MdnsEvent::Expired(expired))) => {
+                            for (peer, addr) in expired {
+                                println!("expired {} {}", peer, addr);
+                            }
+                        }
+
+                        // Kademlia (needs mdns)
+                        SwarmEvent::Behaviour(my_behavior::Event::Kademlia(
+                            KademliaEvent::OutboundQueryCompleted { result, ..},
+                        )) => {
+                            kademlia::kademlia_query_results(result);
+                        },
+
+                        // // Gossipsub
+                        // SwarmEvent::Behaviour(my_behavior::Event::GossipSub(GossipsubEvent::Message {
+                        //     propagation_source: peer_id,
+                        //     message_id: id,
+                        //     message,
+                        // })) => println!(
+                        //         "Got message: '{}' with id: {id} from peer: {peer_id}",
+                        //         String::from_utf8_lossy(&message.data),
+                        //     ),
+                        // _ => {}
+
+                        // Identify (dial multiaddress)
+                        SwarmEvent::NewListenAddr { address, .. } => {
+                            println!("Listening on {:?}", address);
+                            networks_sender.send(format!("0/{}", get_ip_addr(address.to_string())));
+                            // let ten_millis = time::Duration::from_secs(10);
+                            //     let now = time::Instant::now();
+                            //     thread::sleep(ten_millis);
+                            // networks_sender.send(format!("0/{}", get_ip_addr(address.to_string())));
+                        },
+                        // // Prints peer id identify info is being sent to.
+                        // SwarmEvent::Behaviour(my_behavior::Event::Identify(identify::Event::Sent { peer_id, .. })) => {
+                        //     println!("Sent identify info to {:?}", peer_id)
+                        // }
+                        // // Prints out the info received via the identify event
+                        // SwarmEvent::Behaviour(my_behavior::Event::Identify(identify::Event::Received { info, .. })) => {
+                        //     println!("Received {:?}", info)
+                        // }
+
+                        // // Ping (dial multiaddress)
+                        // SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) => {
+                        //     println!("Ping {:?} {:?}", peer, result);
+                        // },
+
+                        // // Autonat
+                        // SwarmEvent::Behaviour(my_behavior::Event::Autonat(autonat::Event::InboundProbe(ip_event))) => {
+                        //     println!("autonat inbound {:?}", ip_event);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::Autonat(autonat::Event::OutboundProbe(op_event))) => {
+                        //     println!("autonat outbound {:?}", op_event);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::Autonat(autonat::Event::StatusChanged {old, new})) => {
+                        //     println!("autonat status changed- old: {:?}, new: {:?}", old, new);
+                        //     // if new status is private, act as client relay
+                        //     // if new status is public, no need for holepunching and can start advertising listen address
+                        //     // can also act as relay node
+                        // },
+
+                        // // Relay Client
+                        // SwarmEvent::Dialing(peer_id) if peer_id == relay_peer_id => {
+                        //     println!("Dialing Relay {:?}", relay_peer_id);
+                        // }
+                        // SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) if peer == relay_peer_id => {
+                        //     println!("Relay Ping {:?} {:?}", peer, result);
+                        // },
+                        // SwarmEvent::ConnectionEstablished { peer_id, .. } if peer_id == relay_peer_id => {
+                        //     println!("Relay Connection Established {:?}", relay_peer_id);
+                        // }
+
+                        // SwarmEvent::Dialing(peer_id) if peer_id == id_A_dst => {
+                        //     println!("Dialing Dst {:?}", peer_id);
+                        // }
+                        // SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) if peer == id_A_dst => {
+                        //     println!("Dst Ping {:?} {:?}", peer, result);
+                        // },
+                        // SwarmEvent::ConnectionEstablished { peer_id, .. } if peer_id == id_A_dst => {
+                        //     println!("Dst Connection Established {:?}", peer_id);
+                        // },
+
+
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqAccepted {relay_peer_id, renewal, limit})) => {
+                        //     println!("1 ReservationReqAccepted {:?} {}", relay_peer_id, renewal);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqFailed {relay_peer_id, renewal, error})) => {
+                        //     println!("2 ReservationReqFailed {:?} {}", relay_peer_id, renewal);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::OutboundCircuitEstablished {relay_peer_id, limit})) => {
+                        //     println!("3 OutboundCircuitEstablished {:?}", relay_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::OutboundCircuitReqFailed {relay_peer_id, error})) => {
+                        //     println!("4 OutboundCircuitReqFailed {:?}", relay_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitEstablished {src_peer_id, limit})) => {
+                        //     println!("5 InboundCircuitEstablished {:?}", src_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitReqFailed {relay_peer_id, error})) => {
+                        //     println!("6 InboundCircuitReqFailed {:?}", relay_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitReqDenied {src_peer_id})) => {
+                        //     println!("7 InboundCircuitReqDenied {:?}", src_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitReqDenyFailed {src_peer_id, error})) => {
+                        //     println!("8 InboundCircuitReqDenyFailed {:?}", src_peer_id);
+                        // },
+
+                        // // DCUtR
+                        // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::InitiatedDirectConnectionUpgrade {remote_peer_id, local_relayed_addr})) => {
+                        //     println!("1 InitiatedDirectConnectionUpgrade {:?}", remote_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::RemoteInitiatedDirectConnectionUpgrade {remote_peer_id, remote_relayed_addr})) => {
+                        //     println!("2 RemoteInitiatedDirectConnectionUpgrade {:?}", remote_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::DirectConnectionUpgradeSucceeded {remote_peer_id})) => {
+                        //     println!("3 DirectConnectionUpgradeSucceeded {:?}", remote_peer_id);
+                        // },
+                        // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::DirectConnectionUpgradeFailed {remote_peer_id, error})) => {
+                        //     println!("4 DirectConnectionUpgradeFailed {:?}", remote_peer_id);
+                        // },
+
+
+                        _ => {}
                     }
                 }
-                SwarmEvent::Behaviour(my_behavior::Event::Mdns(MdnsEvent::Expired(expired))) => {
-                    for (peer, addr) in expired {
-                        println!("expired {} {}", peer, addr);
-                    }
-                }
-
-                // Kademlia (needs mdns)
-                SwarmEvent::Behaviour(my_behavior::Event::Kademlia(
-                    KademliaEvent::OutboundQueryCompleted { result, ..},
-                )) => {
-                    kademlia::kademlia_query_results(result);
-                },
-
-                // Identify (dial multiaddress)
-                SwarmEvent::NewListenAddr { address, .. } => {
-                    println!("Listening on {:?}", address);
-                    networks_sender.send(format!("0/{}", get_ip_addr(address.to_string())));
-                    //networks_sender.send(from_utf8(&address.to_vec()).unwrap().into());
-                },
-                // Prints peer id identify info is being sent to.
-                SwarmEvent::Behaviour(my_behavior::Event::Identify(identify::Event::Sent { peer_id, .. })) => {
-                    println!("Sent identify info to {:?}", peer_id)
-                }
-                // // Prints out the info received via the identify event
-                // SwarmEvent::Behaviour(my_behavior::Event::Identify(identify::Event::Received { info, .. })) => {
-                //     println!("Received {:?}", info)
-                // }
-
-                // // Ping (dial multiaddress)
-                // SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) => {
-                //     println!("Ping {:?} {:?}", peer, result);
-                // },
-
-                // // Autonat
-                // SwarmEvent::Behaviour(my_behavior::Event::Autonat(autonat::Event::InboundProbe(ip_event))) => {
-                //     println!("autonat inbound {:?}", ip_event);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::Autonat(autonat::Event::OutboundProbe(op_event))) => {
-                //     println!("autonat outbound {:?}", op_event);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::Autonat(autonat::Event::StatusChanged {old, new})) => {
-                //     println!("autonat status changed- old: {:?}, new: {:?}", old, new);
-                //     // if new status is private, act as client relay
-                //     // if new status is public, no need for holepunching and can start advertising listen address
-                //     // can also act as relay node
-                // },
-
-                // // Relay Client
-                // SwarmEvent::Dialing(peer_id) if peer_id == relay_peer_id => {
-                //     println!("Dialing Relay {:?}", relay_peer_id);
-                // }
-                // SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) if peer == relay_peer_id => {
-                //     println!("Relay Ping {:?} {:?}", peer, result);
-                // },
-                // SwarmEvent::ConnectionEstablished { peer_id, .. } if peer_id == relay_peer_id => {
-                //     println!("Relay Connection Established {:?}", relay_peer_id);
-                // }
-
-                // SwarmEvent::Dialing(peer_id) if peer_id == id_A_dst => {
-                //     println!("Dialing Dst {:?}", peer_id);
-                // }
-                // SwarmEvent::Behaviour(my_behavior::Event::Ping(ping::Event{ peer, result})) if peer == id_A_dst => {
-                //     println!("Dst Ping {:?} {:?}", peer, result);
-                // },
-                // SwarmEvent::ConnectionEstablished { peer_id, .. } if peer_id == id_A_dst => {
-                //     println!("Dst Connection Established {:?}", peer_id);
-                // },
-                
-
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqAccepted {relay_peer_id, renewal, limit})) => {
-                //     println!("1 ReservationReqAccepted {:?} {}", relay_peer_id, renewal);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::ReservationReqFailed {relay_peer_id, renewal, error})) => {
-                //     println!("2 ReservationReqFailed {:?} {}", relay_peer_id, renewal);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::OutboundCircuitEstablished {relay_peer_id, limit})) => {
-                //     println!("3 OutboundCircuitEstablished {:?}", relay_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::OutboundCircuitReqFailed {relay_peer_id, error})) => {
-                //     println!("4 OutboundCircuitReqFailed {:?}", relay_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitEstablished {src_peer_id, limit})) => {
-                //     println!("5 InboundCircuitEstablished {:?}", src_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitReqFailed {relay_peer_id, error})) => {
-                //     println!("6 InboundCircuitReqFailed {:?}", relay_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitReqDenied {src_peer_id})) => {
-                //     println!("7 InboundCircuitReqDenied {:?}", src_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::RelayClient(v2::client::Event::InboundCircuitReqDenyFailed {src_peer_id, error})) => {
-                //     println!("8 InboundCircuitReqDenyFailed {:?}", src_peer_id);
-                // },
-
-                // // DCUtR
-                // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::InitiatedDirectConnectionUpgrade {remote_peer_id, local_relayed_addr})) => {
-                //     println!("1 InitiatedDirectConnectionUpgrade {:?}", remote_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::RemoteInitiatedDirectConnectionUpgrade {remote_peer_id, remote_relayed_addr})) => {
-                //     println!("2 RemoteInitiatedDirectConnectionUpgrade {:?}", remote_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::DirectConnectionUpgradeSucceeded {remote_peer_id})) => {
-                //     println!("3 DirectConnectionUpgradeSucceeded {:?}", remote_peer_id);
-                // },
-                // SwarmEvent::Behaviour(my_behavior::Event::Dcutr(dcutr::behaviour::Event::DirectConnectionUpgradeFailed {remote_peer_id, error})) => {
-                //     println!("4 DirectConnectionUpgradeFailed {:?}", remote_peer_id);
-                // },
-
-
-                _ => {}
-            }
-        }
     }
 }
 
@@ -229,7 +255,7 @@ pub fn get_ip_addr(multiaddr: String) -> String {
             count += 1;
         }
     }
-    let address = String::from(&multiaddr[first+1..second]);
-    let port = String::from(&multiaddr[third+1..]);
+    let address = String::from(&multiaddr[first + 1..second]);
+    let port = String::from(&multiaddr[third + 1..]);
     return format!("{}:{}", address, port);
 }

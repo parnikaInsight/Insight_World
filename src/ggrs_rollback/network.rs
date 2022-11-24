@@ -225,8 +225,10 @@ impl Config for GGRSConfig {
 }
 
 pub fn get_port(game_receiver: Receiver<String>) -> u16 {
+    println!("get port");
     loop {
-        let player_addr = game_receiver.recv();
+        //println!("tring to create port");
+        let player_addr = game_receiver.try_recv();
         match player_addr {
             Ok(string) => {
                 let key: u32 = string[0..1].parse().unwrap();
@@ -264,6 +266,7 @@ pub fn create_ggrs_session(
     } else {
         other = 0;
     }
+    println!("tring to create  session");
     let mut port = -1;
     loop {
         let player_addr = game_receiver.recv();

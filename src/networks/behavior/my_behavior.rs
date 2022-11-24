@@ -1,5 +1,5 @@
 use libp2p::{
-    gossipsub::GossipsubEvent,
+    gossipsub::{GossipsubEvent, self, Gossipsub},
     identify, ping, dcutr,
     kad::{store::MemoryStore, Kademlia, KademliaEvent},
     mdns::{Mdns, MdnsEvent},
@@ -8,6 +8,7 @@ use libp2p::{
 };
 
 #[derive(NetworkBehaviour)]
+#[behaviour(event_process = true)]
 #[behaviour(out_event = "Event")]
 pub struct MyBehavior {
     pub kademlia: Kademlia<MemoryStore>,
@@ -17,7 +18,7 @@ pub struct MyBehavior {
     pub autonat: autonat::Behaviour,
     pub relay: v2::client::Client,
     pub dcutr: dcutr::behaviour::Behaviour,
-
+    //pub gossipsub: libp2p::gossipsub::Gossipsub,
 }
 
 #[derive(Debug)]
@@ -28,7 +29,8 @@ pub enum Event {
     Ping(ping::Event),
     Autonat(autonat::Event),
     RelayClient(v2::client::Event),
-    Dcutr(dcutr::behaviour::Event)
+    Dcutr(dcutr::behaviour::Event),
+    //GossipSub(libp2p::gossipsub::GossipsubEvent)
 }
 
 impl From<identify::Event> for Event {
@@ -72,3 +74,9 @@ impl From<dcutr::behaviour::Event> for Event {
         Self::Dcutr(event)
     }
 }
+
+// impl From<libp2p::gossipsub::GossipsubEvent> for Event {
+//     fn from(event: libp2p::gossipsub::GossipsubEvent) -> Self {
+//         Self::GossipSub(event)
+//     }
+// }
