@@ -24,20 +24,20 @@ pub fn create_insight_world(
         y: 0,
         z: 0,
     };
-    // Plane on the right of center plane.
-    let plane_b =  world_manager::IPlane {
-        // pub gltfs: Vec<IGltf>,
-        x: 1,
-        y: 0,
-        z: 0,
-    };
-    // Plane on top right corner of plane_b.
-    let plane_c = world_manager::IPlane {
-        // pub gltfs: Vec<IGltf>,
-        x: -2,
-        y: 0,
-        z: -1,
-    };
+    // // Plane on the right of center plane.
+    // let plane_b =  world_manager::IPlane {
+    //     // pub gltfs: Vec<IGltf>,
+    //     x: 1,
+    //     y: 0,
+    //     z: 0,
+    // };
+    // // Plane on top right corner of plane_b.
+    // let plane_c = world_manager::IPlane {
+    //     // pub gltfs: Vec<IGltf>,
+    //     x: -2,
+    //     y: 0,
+    //     z: -1,
+    // };
 
     // Collider testing
     // let handle = asset_server.load("default_gltfs/maple_tree.glb#Scene0");
@@ -53,5 +53,6 @@ pub fn create_insight_world(
     //         })
     //         .insert(collider::AddCollider::new(false, handle));
 
-    world.add_plane(vec![&plane_a, &plane_b, &plane_c], commands, meshes, materials);
+    world.add_plane(vec![&plane_a], commands, meshes, materials);
+    //world.add_plane(vec![&plane_a, &plane_b, &plane_c], commands, meshes, materials);
 }

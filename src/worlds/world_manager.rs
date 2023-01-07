@@ -141,7 +141,7 @@ impl IWorld {
             // Plane
             commands
                 .spawn_bundle(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Plane { size: 15.0 })), //PLANE_SIZE
+                    mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })), //PLANE_SIZE
                     material: materials
                         .add(Color::rgb(0.1 * index, 0.1 * index, 0.1 * index).into()),
                     transform: trans,
@@ -149,10 +149,10 @@ impl IWorld {
                 })
                 .insert(RigidBody::Fixed)
                 //half the cube size
-                .insert(Collider::cuboid(7.5, 0.0, 7.5))
-                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)))
-                .insert_bundle(bevy_mod_picking::PickableBundle::default())
-                .insert(bevy_transform_gizmo::GizmoTransformable);
+                .insert(Collider::cuboid(50.0, 0.0, 50.0))
+                .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+                //.insert_bundle(bevy_mod_picking::PickableBundle::default())
+                //.insert(bevy_transform_gizmo::GizmoTransformable);
 
             // Light
             commands.spawn_bundle(PointLightBundle {

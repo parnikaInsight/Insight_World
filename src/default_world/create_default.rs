@@ -10,22 +10,22 @@ pub fn create_default_plane(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ){
-    // plane
-    commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane { size: 15.0 })), //PLANE_SIZE
-            material: materials.add(Color::rgb(0.5, 0.5, 0.5).into()),
-            ..Default::default()
-        })
-        .insert(RigidBody::Fixed)
-        .insert(Collider::cuboid(7.5, 7.5, 7.5)) //half the cube size
-        .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
+    // // plane
+    // commands
+    //     .spawn_bundle(PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::Plane { size: 15.0 })), //PLANE_SIZE
+    //         material: materials.add(Color::rgb(0.5, 0.5, 0.5).into()),
+    //         ..Default::default()
+    //     })
+    //     .insert(RigidBody::Fixed)
+    //     .insert(Collider::cuboid(7.5, 7.5, 7.5)) //half the cube size
+    //     .insert(ColliderDebugColor(Color::hsl(220.0, 1.0, 0.3)));
 
-    // Light
-    commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
+    // // Light
+    // commands.spawn_bundle(PointLightBundle {
+    //     transform: Transform::from_xyz(4.0, 8.0, 4.0),
+    //     ..Default::default()
+    // });
 
     // // play_scene needs this
     // // Insert startionary gltf animations.
