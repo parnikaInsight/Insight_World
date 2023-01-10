@@ -12,6 +12,70 @@ use crate::systems::framework;
 // implementations of movement. Multiple players can use this ability, just change handle.
 
 // User animation: flip; Controlled animation: dance
+pub struct Sword_Ability {
+    //id: u64, // Ability identifier.
+    // pub handle: u32, // Handle of player using this ability.
+    // effect: framework::Effect,
+    // medium: framework::Medium,
+    // power_type: framework::PowerType,
+    // affected: framework::Affected,
+    // tier: framework::Tier,
+}
+
+// Implemented by power creator.
+impl framework::Power for Sword_Ability {
+    fn my_movement(
+        &self,
+        mut p: &mut info::Player,
+        mut player: &mut AnimationPlayer,
+        animations: play::CharacterAnimations,
+        transform: &mut Transform,
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+        animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
+    ) {
+        // Player describes their own animation when using the power.
+
+        // Animate me
+        player
+            .cross_fade(animations.0[14].clone_weak(), Duration::from_secs_f32(0.25))
+            .set_speed(1.3);
+        p.state.animation = Some(0); //power once then go to idle
+
+        // Put ability into kademlia. Abilites stored in kademlia by nodeid.
+    }
+
+    // Implemented by power creator.
+    fn effect(
+        &self,
+        mut p: &mut info::Player,
+        mut player: &mut AnimationPlayer,
+        animations: play::CharacterAnimations,
+        transform: &mut Transform,
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+        animations_resource: &mut ResMut<Assets<AnimationClip>>,
+        asset_server: &mut Res<AssetServer>,
+    ) {
+        // Specifies how a player reacts to this ability being used on them.
+        // Program how affected players should be animated.
+
+        player
+            .cross_fade(animations.0[3].clone_weak(), Duration::from_secs_f32(0.25))
+            .set_speed(1.3);
+        p.state.animation = Some(0); //power effect once, then go to idle
+        p.state.state = info::PlayerStateEnum::IDLE;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
+// User animation: flip; Controlled animation: dance
 pub struct Dance_Control_Ability {
     //id: u64, // Ability identifier.
     // pub handle: u32, // Handle of player using this ability.

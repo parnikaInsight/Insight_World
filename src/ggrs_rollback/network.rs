@@ -32,32 +32,33 @@ const PLAYER_COLORS: [Color; 4] = [BLUE, ORANGE, MAGENTA, GREEN];
 pub fn setup_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut rip: ResMut<RollbackIdProvider>,
+    //mut rip: ResMut<RollbackIdProvider>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    p2p_session: Option<Res<P2PSession<GGRSConfig>>>,
-    synctest_session: Option<Res<SyncTestSession<GGRSConfig>>>,
-    spectator_session: Option<Res<SpectatorSession<GGRSConfig>>>,
+    // p2p_session: Option<Res<P2PSession<GGRSConfig>>>,
+    // synctest_session: Option<Res<SyncTestSession<GGRSConfig>>>,
+    // spectator_session: Option<Res<SpectatorSession<GGRSConfig>>>,
 ) {
-    //start creating p2p session
-    let num_players = p2p_session
-        .map(|s| s.num_players())
-        .or_else(|| synctest_session.map(|s| s.num_players()))
-        .or_else(|| spectator_session.map(|s| s.num_players()))
-        .expect("No GGRS session found");
+    // //start creating p2p session
+    // let num_players = p2p_session
+    //     .map(|s| s.num_players())
+    //     .or_else(|| synctest_session.map(|s| s.num_players()))
+    //     .or_else(|| spectator_session.map(|s| s.num_players()))
+    //     .expect("No GGRS session found");
 
-    // read cmd line arguments: 0 will be 7000, 1 will be 7001
-    let args: Vec<String> = env::args().collect();
-    let query = &args[1];
+    // // read cmd line arguments: 0 will be 7000, 1 will be 7001
+    // let args: Vec<String> = env::args().collect();
+    // let query = &args[1];
+    let num_players = 1;
 
     // Add player scene.
     let mut player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
 
     // Players identified in ggrs by handles starting from 0.
     for handle in 0..num_players {
-        if handle == 1 {
+        if handle == 0 {
             // TODO
-            player_handle = asset_server.load("default_characters/ninja_tpose.glb#Scene0");
+            player_handle = asset_server.load("default_characters/sword_jump.glb#Scene0");
         } else {
             player_handle = asset_server.load("default_characters/shoot.glb#Scene0");
         }
@@ -90,7 +91,7 @@ pub fn setup_system(
             .insert(info::Information::default())
             .insert_bundle(PickableBundle::default()) // Player can be clicked.
             // Indicates bevy_GGRS that this entity should be saved and loaded.
-            .insert(Rollback::new(rip.next_id()))
+            //.insert(Rollback::new(rip.next_id()))
             
             // Physics
             .insert(LockedAxes::ROTATION_LOCKED)
@@ -109,8 +110,8 @@ pub fn setup_system(
             .id();
 
         // Insert my player.
-        let q: usize = query.parse().unwrap();
-        if q == handle {
+        // let q: usize = query.parse().unwrap();
+        // if q == handle {
             commands.entity(entity_id).insert(Me);
 
             // // Follow camera
@@ -165,7 +166,7 @@ pub fn setup_system(
             //     },
             //     ..default()
             // });
-        }
+        //}
     }
     println!("setup system");
 }

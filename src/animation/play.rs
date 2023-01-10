@@ -25,7 +25,13 @@ pub fn setup_character(
         asset_server.load("default_characters/fly_back_death.glb#Animation0"),   
         asset_server.load("default_characters/jump_attack.glb#Animation0"),    
         asset_server.load("default_characters/injured.glb#Animation0"),  
-        asset_server.load("default_characters/two_hands_spell.glb#Animation0"),  
+        asset_server.load("default_characters/two_hands_spell.glb#Animation0"), 
+        asset_server.load("default_characters/archer.glb#Animation0"),  
+        asset_server.load("default_characters/running.glb#Animation0"), 
+        asset_server.load("default_characters/mutant_running.glb#Animation0"), 
+        asset_server.load("default_characters/sword_run.glb#Animation0"), 
+        asset_server.load("default_characters/sword_jump.glb#Animation0"), 
+        asset_server.load("default_characters/sword_cast.glb#Animation0"), 
     ]));
 }
 

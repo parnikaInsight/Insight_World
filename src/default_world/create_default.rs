@@ -5,11 +5,11 @@ use crate::animation::play;
 
 // Add stationary gltfs.
 pub fn create_default_plane(
-    mut commands: Commands, 
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-){
+) {
     // // plane
     // commands
     //     .spawn_bundle(PbrBundle {
@@ -59,6 +59,31 @@ pub fn create_default_plane(
         },
         scene: player_handle2.clone(),
         ..default()
+    });
+
+    // Insert startionary gltf animations.
+    commands.insert_resource(play::Animations(vec![
+        asset_server.load("default_characters/mutant_roaring.glb#Animation0")
+    ]));
+
+    // // Mutant 
+    let player_handle2: Handle<Scene> = asset_server.load("default_characters/mutant_roaring.glb#Scene0");
+    commands.spawn_bundle(SceneBundle {
+        transform: Transform::from_xyz(5.0, 0.0, 0.0)
+            //.with_scale(Vec3::new(0.5, 0.5, 1.0))
+            .with_rotation(Quat::from_rotation_y((270.0_f32).to_radians())),
+        scene: player_handle2.clone(),
+        ..default()
+    })
+    // Physics
+    .insert(LockedAxes::ROTATION_LOCKED)
+    .insert(RigidBody::Dynamic)
+    .with_children(|children| {
+        children
+            .spawn()
+            .insert(Collider::cuboid(1.0, 1.0, 1.0))
+            // Position the collider relative to the rigid-body.
+            .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 1.0, 0.0)));
     });
 
     // // Dome

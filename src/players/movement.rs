@@ -1,11 +1,13 @@
 #![allow(dead_code)]
 
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::math::f32::Vec3;
 use bevy::prelude::*;
 use bytemuck::{Pod, Zeroable};
 use ggrs::{InputStatus, PlayerHandle};
 use std::time::Duration;
 
+use crate::{MyMoves, PrevInput};
 use crate::animation::{animation_helper, play};
 use crate::ggrs_rollback::network;
 use crate::players::info;
@@ -19,13 +21,13 @@ const INPUT_RIGHT: u8 = 1 << 3;
 const POWER: u8 = 1 << 4;
 
 #[repr(C)]
-#[derive(Copy, Clone, PartialEq, Pod, Zeroable)]
+#[derive(Copy, Clone, PartialEq, Debug, Pod, Zeroable)]
 pub struct BoxInput {
     pub inp: u8, // List of inputs: up, down, left, right.
 }
 
 // Handles one movement.
-pub fn input(_handle: In<PlayerHandle>, keyboard_input: Res<Input<KeyCode>>) -> BoxInput {
+pub fn input(/*_handle: In<PlayerHandle>,*/ mut commands: Commands, keyboard_input: Res<Input<KeyCode>>, my_moves: ResMut<MyMoves>, prev: ResMut<PrevInput>, frame: ResMut<FrameTimeDiagnosticsState>) { //-> BoxInput {
     let mut input: u8 = 0;
 
     if keyboard_input.pressed(KeyCode::W) {
@@ -44,7 +46,27 @@ pub fn input(_handle: In<PlayerHandle>, keyboard_input: Res<Input<KeyCode>>) -> 
         input |= POWER;
     }
 
-    BoxInput { inp: input }
+    // Adds new move
+    let mut moves = my_moves.moves.clone();
+    if input != prev.prev_input {
+        //let frame = FrameTimeDiagnosticsPlugin::FrameTimeDiagnosticsState.frame_count;
+        moves.push((frame.frame_count, input));
+        println!("Moves: {:?} ", moves);
+        commands.insert_resource(MyMoves{moves});
+        commands.insert_resource(PrevInput{prev_input: input});
+    }
+
+    //BoxInput { inp: input }
+    let vec = vec![BoxInput { inp: input }];
+    commands.insert_resource(vec);
+}
+
+pub struct FrameTimeDiagnosticsState {
+    pub frame_count: f64,
+}
+
+pub fn inc_frame(mut frame: ResMut<FrameTimeDiagnosticsState>) {
+    frame.frame_count += 1.0;
 }
 
 pub fn animate_moving_player(
@@ -84,7 +106,7 @@ pub fn animate_moving_player(
                         if p.state.animation.is_none() || p.state.animation.unwrap() != 1 {
                             player
                                 .cross_fade(
-                                    animations.0[1].clone_weak(),
+                                    animations.0[12].clone_weak(),
                                     Duration::from_secs_f32(0.25),
                                 )
                                 .set_speed(1.3)
@@ -99,7 +121,7 @@ pub fn animate_moving_player(
                     info::PlayerStateEnum::POWER => {
                         if p.state.animation.is_none() || p.state.animation.unwrap() != 2 {
                             // Change my player's movement according to p.ability_id 
-                            let girl_ability = abilities::Dance_Control_Ability {};
+                            let girl_ability = abilities::Sword_Ability {};
                             girl_ability.my_movement(&mut p, &mut player, animations.clone(), &mut t, &mut commands,  &mut meshes, &mut materials, &mut animations_resource, &mut asset_server);
                         }
                     }
@@ -110,7 +132,7 @@ pub fn animate_moving_player(
                         // A player cannot change how they're affected as a power, but they can create a power to counter.
                         // TODO: Do you need (handle arg) to know whose ability is affecting you?
 
-                        let girl_effect = abilities::Dance_Control_Ability {};
+                        let girl_effect = abilities::Sword_Ability {};
                         girl_effect.effect(&mut p, &mut player, animations.clone(), &mut t, &mut commands, &mut meshes, &mut materials, &mut animations_resource, &mut asset_server);
                     }
                 };
@@ -122,7 +144,8 @@ pub fn animate_moving_player(
 pub fn translate_player(
     animations: Res<play::CharacterAnimations>,
     mut player: Query<(Entity, &mut AnimationPlayer)>,
-    inputs: Res<Vec<(BoxInput, InputStatus)>>,
+    //inputs: Res<Vec<(BoxInput, InputStatus)>>,
+    inputs: Res<Vec<BoxInput>>,
     mut query: Query<(
         Entity,
         &Children,
@@ -139,7 +162,8 @@ pub fn translate_player(
 
     let turn_speed: f32 = 15.0;
     for (e, children, mut t, mut p, helper) in query.iter_mut() {
-        let input = inputs[p.handle as usize].0.inp;
+        //let input = inputs[p.handle as usize].0.inp;
+        let input = inputs[p.handle as usize].inp;
         //check that the shooter's parent entity's helper entity has the same id as the animation_player entity
         for (player_ent, mut player) in &mut player {
             if helper.player_entity.id() == player_ent.id() {

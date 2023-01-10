@@ -9,9 +9,9 @@ pub struct MainCamera; // Dolly fly camera
 pub fn setup_camera(mut commands: Commands, mut windows: ResMut<Windows>) {
     // Camera Setup
 
-    let translation = [-2.0f32, 2.0f32, 5.0f32];
+    let translation = [-5.0f32, 2.0f32, 5.0f32];
     let transform = Transform::from_translation(bevy::math::Vec3::from_slice(&translation))
-        .looking_at(bevy::math::Vec3::ZERO, bevy::math::Vec3::Y);
+        .looking_at(bevy::math::Vec3::new(0.0, 2.0, 0.0), bevy::math::Vec3::Y);
     let rotation = transform.rotation;
     let mut yaw_pitch = YawPitch::new();
     yaw_pitch.set_rotation_quat(rotation);

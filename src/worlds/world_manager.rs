@@ -143,7 +143,8 @@ impl IWorld {
                 .spawn_bundle(PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })), //PLANE_SIZE
                     material: materials
-                        .add(Color::rgb(0.1 * index, 0.1 * index, 0.1 * index).into()),
+                        //.add(Color::rgb(0.1 * index, 0.1 * index, 0.1 * index).into()),
+                        .add(Color::rgb(0.8, 0.7, 0.6).into()),
                     transform: trans,
                     ..Default::default()
                 })
