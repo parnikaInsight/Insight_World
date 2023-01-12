@@ -1,79 +1,21 @@
+use base16ct;
+use bevy::ecs::bundle;
 use bevy::prelude::*;
+use bevy_egui::{egui, EguiContext, EguiPlugin};
 use bevy_rapier3d::prelude::*;
-use std::time::Duration;
+use rand::seq::index;
+use sha2::{Digest, Sha256};
+use std::{thread, time::Duration};
 
 use crate::animation::{animation_helper, play};
 use crate::ggrs_rollback::network;
 use crate::players::info;
 use crate::systems::framework;
+use crate::{MyMoves, WinningMoves};
 
 // Created by player.
 // All abilites have these 7 fields. Each ability is its own struct so it can have different
 // implementations of movement. Multiple players can use this ability, just change handle.
-
-// User animation: flip; Controlled animation: dance
-pub struct Sword_Ability {
-    //id: u64, // Ability identifier.
-    // pub handle: u32, // Handle of player using this ability.
-    // effect: framework::Effect,
-    // medium: framework::Medium,
-    // power_type: framework::PowerType,
-    // affected: framework::Affected,
-    // tier: framework::Tier,
-}
-
-// Implemented by power creator.
-impl framework::Power for Sword_Ability {
-    fn my_movement(
-        &self,
-        mut p: &mut info::Player,
-        mut player: &mut AnimationPlayer,
-        animations: play::CharacterAnimations,
-        transform: &mut Transform,
-        commands: &mut Commands,
-        meshes: &mut ResMut<Assets<Mesh>>,
-        materials: &mut ResMut<Assets<StandardMaterial>>,
-        animations_resource: &mut ResMut<Assets<AnimationClip>>,
-        asset_server: &mut Res<AssetServer>,
-    ) {
-        // Player describes their own animation when using the power.
-
-        // Animate me
-        player
-            .cross_fade(animations.0[14].clone_weak(), Duration::from_secs_f32(0.25))
-            .set_speed(1.3);
-        p.state.animation = Some(0); //power once then go to idle
-
-        // Put ability into kademlia. Abilites stored in kademlia by nodeid.
-    }
-
-    // Implemented by power creator.
-    fn effect(
-        &self,
-        mut p: &mut info::Player,
-        mut player: &mut AnimationPlayer,
-        animations: play::CharacterAnimations,
-        transform: &mut Transform,
-        commands: &mut Commands,
-        meshes: &mut ResMut<Assets<Mesh>>,
-        materials: &mut ResMut<Assets<StandardMaterial>>,
-        animations_resource: &mut ResMut<Assets<AnimationClip>>,
-        asset_server: &mut Res<AssetServer>,
-    ) {
-        // Specifies how a player reacts to this ability being used on them.
-        // Program how affected players should be animated.
-
-        player
-            .cross_fade(animations.0[3].clone_weak(), Duration::from_secs_f32(0.25))
-            .set_speed(1.3);
-        p.state.animation = Some(0); //power effect once, then go to idle
-        p.state.state = info::PlayerStateEnum::IDLE;
-    }
-}
-
-//--------------------------------------------------------------------------------------------------------------------
-
-
 
 // User animation: flip; Controlled animation: dance
 pub struct Dance_Control_Ability {
@@ -305,7 +247,7 @@ impl framework::Power for Spawn_Cube_Ability {
             .set_speed(1.3);
         p.state.animation = Some(0); //power once then go to idle
 
-        // Spawn gltf bird. 
+        // Spawn gltf bird.
         // (TODO: Must add animation_helper to play bird animation)
         // (TODO: This runs multiple times so becomes laggy. Spawn gltf once.
         let handle = asset_server.load("nature/phoenix_bird/scene.gltf#Scene0");

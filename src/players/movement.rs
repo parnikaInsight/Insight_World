@@ -12,6 +12,7 @@ use crate::animation::{animation_helper, play};
 use crate::ggrs_rollback::network;
 use crate::players::info;
 use crate::systems::{abilities, framework};
+use crate::demo_game::demo;
 use framework::Power;
 
 const INPUT_UP: u8 = 1 << 0;
@@ -121,7 +122,8 @@ pub fn animate_moving_player(
                     info::PlayerStateEnum::POWER => {
                         if p.state.animation.is_none() || p.state.animation.unwrap() != 2 {
                             // Change my player's movement according to p.ability_id 
-                            let girl_ability = abilities::Sword_Ability {};
+                           // let girl_ability = abilities::Sword_Ability {};
+                            let girl_ability = demo::Sword_Ability {};
                             girl_ability.my_movement(&mut p, &mut player, animations.clone(), &mut t, &mut commands,  &mut meshes, &mut materials, &mut animations_resource, &mut asset_server);
                         }
                     }
@@ -132,7 +134,7 @@ pub fn animate_moving_player(
                         // A player cannot change how they're affected as a power, but they can create a power to counter.
                         // TODO: Do you need (handle arg) to know whose ability is affecting you?
 
-                        let girl_effect = abilities::Sword_Ability {};
+                        let girl_effect = demo::Sword_Ability {};
                         girl_effect.effect(&mut p, &mut player, animations.clone(), &mut t, &mut commands, &mut meshes, &mut materials, &mut animations_resource, &mut asset_server);
                     }
                 };

@@ -49,6 +49,58 @@ pub fn create_default_plane(
     //     ..default()
     // });
 
+    // green cube
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        transform: Transform::from_xyz(-2.0, 0.5, -3.0),
+        ..default()
+    })
+    // Physics
+    .insert(LockedAxes::ROTATION_LOCKED)
+    .insert(RigidBody::Dynamic)
+    .with_children(|children| {
+        children
+            .spawn()
+            .insert(Collider::cuboid(0.25, 0.25, 0.25))
+            // Position the collider relative to the rigid-body.
+            .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
+    });
+    // pink cube
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+        //material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+        transform: Transform::from_xyz(-2.25, 2.5, -3.0),
+        ..default()
+    })
+    // Physics
+    .insert(LockedAxes::ROTATION_LOCKED)
+    .insert(RigidBody::Dynamic)
+    .with_children(|children| {
+        children
+            .spawn()
+            .insert(Collider::cuboid(0.25, 0.25, 0.25))
+            // Position the collider relative to the rigid-body.
+            .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
+    });
+    // pink cube
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
+        material: materials.add(Color::rgb(0.3, 0.0, 0.3).into()),
+        transform: Transform::from_xyz(-1.75, 3.5, -3.0),
+        ..default()
+    })
+    // Physics
+    .insert(LockedAxes::ROTATION_LOCKED)
+    .insert(RigidBody::Dynamic)
+    .with_children(|children| {
+        children
+            .spawn()
+            .insert(Collider::cuboid(0.25, 0.25, 0.25))
+            // Position the collider relative to the rigid-body.
+            .insert_bundle(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
+    });
+
     // // Heaven sky orb
     let player_handle2: Handle<Scene> = asset_server.load("nature/heaven/scene.gltf#Scene0");
     commands.spawn_bundle(SceneBundle {

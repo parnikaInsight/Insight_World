@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy_dolly::prelude::*;
-//use bevy_egui::EguiPlugin;
+use bevy_egui::{egui, EguiContext, EguiPlugin};
 use bevy_ggrs::{GGRSPlugin, SessionType};
 //use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_mod_picking::*;
@@ -16,7 +16,10 @@ mod ggrs_rollback;
 mod players;
 mod systems;
 mod worlds;
+mod demo_game;
 
+use demo_game::{demo, send};
+use systems::{abilities};
 use animation::{animation_helper, play};
 use colliders::collider;
 use default_world::create_default;
@@ -79,6 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .add_plugins(DefaultPlugins)
         .add_plugins(DefaultPickingPlugins)
+        .add_plugin(EguiPlugin)
         // .add_plugin(LogDiagnosticsPlugin::default())
         // .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(bevy_transform_gizmo::TransformGizmoPlugin::default())
@@ -106,9 +110,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     app.add_system(movement::translate_player.after(movement::input));
     app.add_system(movement::animate_moving_player.after(movement::translate_player));
     app.insert_resource(MyMoves{moves: vec![(0.0, 0)]});
+    app.insert_resource(WinningMoves{moves: vec![(0.0, 0)]});
     app.insert_resource(PrevInput{prev_input: 0});
     app.insert_resource(FrameTimeDiagnosticsState{frame_count: 0.0});
     app.add_system(movement::inc_frame);
+    app.add_system(demo::objective_completion.after(movement::translate_player));
+    //app.add_startup_system(send::test_hash);
 
     // // Create default plane.
     app.add_startup_system(create_default::create_default_plane);
@@ -142,3 +149,8 @@ pub struct MyMoves{
 pub struct PrevInput{
     prev_input: u8
 } //
+
+#[derive(Default, Debug)]
+pub struct WinningMoves{
+    moves: Vec<(f64, u8)>
+} // (frame, move)

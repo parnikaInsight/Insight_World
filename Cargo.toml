@@ -13,7 +13,7 @@ rand = "0.8.5"
 noise = "0.8.0"
 glam = "0.21.2"
 bevy_dolly =  {git = "https://github.com/paxsethorld/bevy_dolly.git", branch = "trial#2"}  #updated for bevy 0.8
-bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d", features = ["debug-render"]}
+bevy_rapier3d = {path = "src/crates/rapier/bevy_rapier3d", features = ["debug-render", "enhanced-determinism"]}
 bevy_mod_picking = {git = "https://github.com/paxsethorld/bevy_mod_picking.git", branch = "trial#2"} #updated for bevy 0.8
 #bevy_mod_picking = {path = "src/crates/bevy_mod_picking"} #updated for bevy 0.8
 bevy_transform_gizmo = {git = "https://github.com/paxsethorld/bevy_transform_gizmo.git", branch = "0.8"}
@@ -31,6 +31,8 @@ serde_json = "1.0.81"
 serde-big-array = "0.4.1"
 rocksdb = "0.19.0"
 emath = "0.19.0"
+sha2 = "0.10.6"
+base16ct = {version = "0.1.1", features = ["alloc"]}
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -42,3 +44,7 @@ opt-level = 1
 [[bin]]
 name = "plane_creator"
 path = "src/plane_creator/main.rs"
+
+[[bin]]
+name = "demo_verify"
+path = "src/demo_verify/main.rs"
