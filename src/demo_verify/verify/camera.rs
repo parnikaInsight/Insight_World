@@ -8,7 +8,6 @@ pub struct MainCamera; // Dolly fly camera
 
 pub fn setup_camera(mut commands: Commands, mut windows: ResMut<Windows>) {
     // Camera Setup
-
     let translation = [-5.0f32, 2.0f32, 5.0f32];
     let transform = Transform::from_translation(bevy::math::Vec3::from_slice(&translation))
         .looking_at(bevy::math::Vec3::new(0.0, 2.0, 0.0), bevy::math::Vec3::Y);
@@ -29,24 +28,6 @@ pub fn setup_camera(mut commands: Commands, mut windows: ResMut<Windows>) {
             .with(Smooth::new_position_rotation(1.0, 1.0))
             .build(),
     );
-
-    // Follow Camera
-    // commands.spawn().insert(
-    //     CameraRig::builder()
-    //         .with(Position {translation: transform.translation,})
-    //         .with(Rotation {rotation})
-    //         .with(yaw_pitch)
-    //         .with(Smooth::new_position(1.25).predictive(true))
-    //         .with(Arm::new(Vec3::new(0.0, 1.5, -3.5)))
-    //         .with(Smooth::new_position(2.5))
-    //         .with(
-    //             LookAt::new(transform.translation + Vec3::Y)
-    //                 .tracking_smoothness(1.25)
-    //                 .tracking_predictive(true),
-    //         )
-    //         .build(),
-    // );
-
 
     // Create camera.
     commands

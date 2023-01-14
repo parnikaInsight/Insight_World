@@ -69,9 +69,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // app // Add your GGRS session.
     //     .insert_resource(sess)
     //     .insert_resource(SessionType::P2PSession);
-
+       let mystruct = RapierConfiguration {
+        gravity: Vect::Y * -9.81,
+        physics_pipeline_active: true,
+        query_pipeline_active: true,
+        timestep_mode: TimestepMode::Fixed {
+            dt: 0.1,
+            substeps: 1,
+        },
+        scaled_shape_subdivision: 10,
+       
+    };
     //General Setup
-    app.insert_resource(Msaa { samples: 4 })
+    app.insert_resource(Msaa { samples: 4 }).insert_resource(mystruct)
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .insert_resource(WindowDescriptor {
             // This must come before default plugin.
