@@ -50,19 +50,19 @@ pub fn create_default_plane(
     // });
 
     // // Heaven sky orb
-    // let player_handle2: Handle<Scene> = asset_server.load("nature/heaven/scene.gltf#Scene0");
-    // commands.spawn_bundle(SceneBundle {
-    //     transform: Transform {
-    //         translation: Vec3::new(0.0, 0.0, 0.0),
-    //         scale: Vec3::new(10.0, 10.0, 10.0),
-    //         ..default()
-    //     },
-    //     scene: player_handle2.clone(),
-    //     ..default()
-    // });
+    let player_handle2: Handle<Scene> = asset_server.load("nature/heaven/scene.gltf#Scene0");
+    commands.spawn_bundle(SceneBundle {
+        transform: Transform {
+            translation: Vec3::new(0.0, 0.0, 0.0),
+            scale: Vec3::new(10.0, 10.0, 10.0),
+            ..default()
+        },
+        scene: player_handle2.clone(),
+        ..default()
+    });
 
     // // Dome
-    // let player_handle3: Handle<Scene> = asset_server.load("default/parasol/scene.gltf#Scene0");
+    // let player_handle3: Handle<Scene> = asset_server.load("nature/parasol/scene.gltf#Scene0");
     // commands.spawn_bundle(SceneBundle {
     //     transform: Transform {
     //         translation: Vec3::new(0.0, 0.0, 0.0),

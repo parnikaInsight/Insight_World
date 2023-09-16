@@ -1,0 +1,24 @@
+Press 1 (while pressing gizmo with right click) => Scale object up
+Press 2 (while pressing gizmo with right click) => Scale object down
+^ Scaling done in bevy_transform_gizmo. 
+
+database_assets: Hashmap<world_name, Hashmap<gltf_name, Transform>>
+
+// Today:
+// create world with 2 gltf entities, not cubes
+// spawn transparent cube with gizmo at center of gltf and link gltf transform to cube's
+
+// world snapshot OR save world as a list of gltf entities and their transforms
+// save to db_worlds folder
+// retrieve world from assets and respawn scene
+// add panel with already loaded gltfs that map to their spawning
+
+// click animations sequentially to map to ability creation
+// animation control
+// transform control
+// object spawning
+// health manipulation
+
+// Later:
+// dynamically loading gltfs through ui panel
+// serialize code and put into database

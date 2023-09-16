@@ -4,11 +4,13 @@ use bevy_ggrs::Rollback;
 use crate::worlds::{world_manager, player};
 use crate::players::info;
 use crate::ggrs_rollback::network;
+use crate::colliders::collider;
 
 pub fn create_insight_world(
     mut commands: Commands, 
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     //Insight
     let mut insight = world_manager::InsightWorld::new();
@@ -36,5 +38,20 @@ pub fn create_insight_world(
         y: 0,
         z: -1,
     };
+
+    // Collider testing
+    // let handle = asset_server.load("default_gltfs/maple_tree.glb#Scene0");
+    //     commands
+    //         .spawn_bundle(SceneBundle {
+    //             transform: Transform {
+    //                 translation: Vec3::new(0.0, 0.0, 0.0),
+    //                 scale: Vec3::new(0.1, 0.1, 0.1),
+    //                 ..default()
+    //             },
+    //             scene: handle.clone(),
+    //             ..default()
+    //         })
+    //         .insert(collider::AddCollider::new(false, handle));
+
     world.add_plane(vec![&plane_a, &plane_b, &plane_c], commands, meshes, materials);
 }
