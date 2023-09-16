@@ -1,7 +1,8 @@
 # Insight World
-https://github.com/parnikaInsight/Insight_World/assets/108373696/bf6f0081-dd7f-42fd-be19-675be2248ecb
 
-https://github.com/parnikaInsight/Insight_World/assets/108373696/ece5c91d-248f-48c1-9afa-d0ff3b5dde54
+https://github.com/parnikaInsight/Insight_World/assets/108373696/260b38aa-0055-479d-9c83-20cce4ef013e
+
+https://github.com/parnikaInsight/Insight_World/assets/108373696/8698398c-90eb-40c7-9936-f9dcbda6f0e1
 
 ## Overview
 A decentralized metaverse beta prototype for gamers and shoppers.
